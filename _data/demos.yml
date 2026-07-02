@@ -108,11 +108,13 @@
   arcade_title: Intelligent certificate renewal with Automation Orchestrator
   workflow_mermaid: |
     flowchart LR
-      A[Splunk alert — cert expired] --> B[AO webhook trigger]
-      B --> C[Plan renewal — AI agent]
-      C --> D[Approve renewal — operator]
-      D --> E[Run renewal job — dynamic template]
-      E --> F[Validate renewal — TLS check]
+      A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Splunk Cert Alert", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/task-agent.png", label: "Plan Renewal", pos: "b", h: 96, constraint: "on" }
+      B --> C[Approve Renewal]
+      C -->|approved| D@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Run Renewal Job", pos: "b", h: 96, constraint: "on" }
+      C -->|rejected| E[Renewal Rejected]
+      D --> F@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Validate Renewal", pos: "b", h: 96, constraint: "on" }
+      classDef noBorder fill:transparent,stroke:transparent
+      class A,B,D,F noBorder
 
 - slug: risk-based-routing
   title: Risk-Based Routing

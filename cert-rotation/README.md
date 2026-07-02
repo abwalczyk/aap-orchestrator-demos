@@ -21,9 +21,9 @@ What makes it intelligent: the same workflow handles a PEM certificate on nginx 
 
 ```mermaid
 flowchart LR
-  A[Splunk alert — cert expired] --> B[AO webhook trigger]
-  B --> C[Plan renewal — AI agent]
-  C --> D[Approve renewal — operator]
-  D --> E[Run renewal job — dynamic template]
-  E --> F[Validate renewal — TLS check]
+  A[Splunk Cert Alert] --> B[Plan Renewal]
+  B --> C[Approve Renewal]
+  C -->|approved| D[Run Renewal Job]
+  C -->|rejected| E[Renewal Rejected]
+  D --> F[Validate Renewal]
 ```
