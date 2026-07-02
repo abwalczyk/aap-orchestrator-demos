@@ -372,6 +372,10 @@ a {
   background: #0a0a0a !important;
 }
 
+.demo-card--featured .demo-card__thumb {
+  aspect-ratio: 16 / 9;
+}
+
 .demo-card__video {
   position: absolute;
   inset: 0;
