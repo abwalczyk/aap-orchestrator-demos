@@ -1,15 +1,44 @@
-# User Lifecycle Demos
+# User Lifecycle 101: Request Type Routing
 
-Switch-based identity operations — one intake form, four completely different runbooks.
+**Status: Coming soon** — scaffold only. Playbooks and AO workflow JSON not built yet.
 
-## The use case
+## What this demo shows
 
-HR or IT service management submits a user request. The request type — new hire, contractor, role change, or termination — maps cleanly to a string value. automation orchestrator switches on `request_type` and runs the runbook that matches, without nested approval trees or monolithic playbooks.
+Switch on `request_type` from an AO survey, webhook, or ticket integration. Each value triggers a purpose-built automation path.
 
-**One-liner:** *One form. Four completely different runbooks.*
+| `request_type` | Action |
+|---|---|
+| `new_hire` | Create user, SSH key, sudo, groups |
+| `contractor` | Create user, expiry date, limited sudo |
+| `role_change` | Update groups and sudo only |
+| `termination` | Lock account, archive home, revoke keys |
 
-## Demos
+Switch routing is not only for technical metrics — human input maps cleanly to string values.
 
-| Level | Demo | Status | What it shows |
-|---|---|---|---|
-| [101](101-request-type-routing/) | Request Type Routing | Coming soon | Survey/webhook → switch on `request_type` → provision, update, or deprovision |
+## Workflow
+
+```mermaid
+flowchart LR
+  Trigger[Survey or webhook] --> Switch{request_type}
+  Switch -->|new_hire| Hire[JT: provision_new_hire]
+  Switch -->|contractor| Contractor[JT: provision_contractor]
+  Switch -->|role_change| Role[JT: update_role]
+  Switch -->|termination| Term[JT: terminate_user]
+  Hire --> Notify[Notify IT / HR]
+  Contractor --> Notify
+  Role --> Notify
+  Term --> Notify
+```
+
+## Playbooks
+
+🚧 **Under development** — playbook list and source links will be added when this demo is built.
+
+## Planned artifacts
+
+```
+
+  ao/
+  aap/playbooks/
+  README.md
+```

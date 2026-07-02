@@ -4,12 +4,12 @@ AI-driven certificate lifecycle management using automation orchestrator. The AI
 
 ## Demos
 
-| Level | Demo | What It Shows |
-|---|---|---|
-| [101](101-cert-lifecycle/) | Intelligent Cert Lifecycle | Two cert types (PEM + Java keystore), AI routing, Splunk integration, operator approval |
-| [102](102-cert-expiry-switch/) | Expiry Threshold Routing | Coming soon — rule-based switch on days remaining |
-| [201](201-risk-based-routing/) | Risk-Based Routing | Coming soon |
-| [301](301-proactive-assessment/) | Proactive Assessment | Coming soon |
+| Demo | What it shows |
+|---|---|
+| [Intelligent Cert Lifecycle](cert-lifecycle/) | Two cert types (PEM + Java keystore), AI routing, Splunk integration, operator approval |
+| [Expiry Threshold Routing](cert-expiry-switch/) | Coming soon — switch on days remaining |
+| [Risk-Based Routing](risk-based-routing/) | Coming soon — AI-assessed risk tier |
+| [Proactive Assessment](proactive-assessment/) | Coming soon — scheduled estate-wide scan |
 
 ## The Story
 
@@ -17,7 +17,7 @@ A Splunk alert fires when a TLS certificate expires. Automation orchestrator rec
 
 What makes it intelligent: the same workflow handles a PEM certificate on nginx and a Java keystore on an API server. The agent figures out which is which and selects the right template. No conditions. No hardcoded routing.
 
-## Workflow (101)
+## Workflow (Intelligent Cert Lifecycle)
 
 ```mermaid
 flowchart LR

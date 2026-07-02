@@ -1,9 +1,39 @@
-# Subscription Management Demos
+# Subscription Management 101: RHEL Subscription Routing
 
-Switch-based RHEL subscription response — route by registration state, not job exit code.
+**Status: Coming soon** — scaffold only.
 
-## Demos
+## What this demo shows
 
-| Level | Demo | Status | What it shows |
-|---|---|---|---|
-| [101](101-rhel-subscription-routing/) | RHEL Subscription Routing | Coming soon | Check subscription → switch on status → register, renew, or escalate |
+Switch on RHEL subscription state after a compliance check:
+
+| `subscription_status` | Action |
+|---|---|
+| `registered` | Log compliant |
+| `expiring` | Notify + schedule renewal |
+| `expired` | Register or attach subscription |
+| `unregistered` | Register with activation key |
+
+## Workflow
+
+```mermaid
+flowchart LR
+  Trigger[Schedule] --> Check[JT: check_subscription]
+  Check --> Switch{subscription_status}
+  Switch -->|registered| OK[JT: log_compliant]
+  Switch -->|expiring| Warn[JT: notify_expiring]
+  Switch -->|expired| Renew[JT: renew_subscription]
+  Switch -->|unregistered| Register[JT: register_system]
+```
+
+## Playbooks
+
+🚧 **Under development** — playbook list and source links will be added when this demo is built.
+
+## Planned artifacts
+
+```
+
+  ao/
+  aap/playbooks/
+  README.md
+```

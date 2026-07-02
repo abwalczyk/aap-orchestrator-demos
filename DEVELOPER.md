@@ -10,76 +10,52 @@ cd aap-orchestrator-demos
 
 ansible-galaxy collection install -r collections/requirements.yml
 
-# Cert rotation 101
-cat cert-rotation/101-cert-lifecycle/SETUP_GUIDE.md
+# Cert rotation setup
+cat cert-rotation/cert-lifecycle/SETUP_GUIDE.md
 
-# Disk utilization 101
-cat disk-utilization/101-disk-threshold-routing/README.md
+# Disk utilization
+cat disk-utilization/README.md
 ```
-
-## Demo levels
-
-See [DEMO_LEVELS.md](DEMO_LEVELS.md) for the 101 / 201 / 301 convention.
-
-| Level | Complexity | Typical setup |
-|---|---|---|
-| **101** | Single resource, manual trigger | ~15 min |
-| **201** | AI routing, multiple services | ~30 min |
-| **301** | Monitoring + scheduled + reactive | ~45 min |
 
 ## How demos are organized
 
+One demo per folder. Multi-demo categories (e.g. `cert-rotation/`) use a descriptive subfolder per demo.
+
 ```
 <use-case>/
-  101-<name>/    # Entry level: minimal infrastructure, proves the concept
-  201-<name>/    # Intermediate: more services, smarter routing
-  301-<name>/    # Advanced: full lifecycle, monitoring integration
-```
-
-Each level contains:
-
-```
-<level>/
-  REQUIREMENTS.md   # What infrastructure you need
-  SETUP_GUIDE.md    # Step-by-step setup instructions
-  ao/               # automation orchestrator workflow JSON (importable)
-  aap/playbooks/    # Ansible playbooks registered as AAP job templates
-  setup/            # Playbooks to provision the demo environment
-  static/           # Static files served by demo web services
-  test/             # Scripts to trigger and validate the demo
-  inventory/        # Ansible inventory
-  group_vars/       # Variable defaults
+  README.md           # Demo docs and setup
+  ao/                 # automation orchestrator workflow JSON (importable)
+  aap/playbooks/      # Ansible playbooks registered as AAP job templates
+  setup/              # Playbooks to provision the demo environment (where applicable)
+  inventory/          # Ansible inventory
+  group_vars/         # Variable defaults
 ```
 
 ## Repository structure
 
 ```
 aap-orchestrator-demos/
-├── README.md                          # Public landing page
-├── DEVELOPER.md                       # This file
-├── DEMO_LEVELS.md                     # 101/201/301 convention
-├── _data/demos.yml                    # GitHub Pages demo catalog
-├── collections/
-│   └── requirements.yml               # Ansible collections needed
+├── README.md
+├── DEVELOPER.md
+├── _data/demos.yml
 ├── cert-rotation/
-│   ├── README.md
-│   ├── 101-cert-lifecycle/            # Active
-│   ├── 102-cert-expiry-switch/        # Coming soon
-│   ├── 201-risk-based-routing/        # Coming soon
-│   └── 301-proactive-assessment/      # Coming soon
-├── disk-utilization/
-│   ├── README.md
-│   └── 101-disk-threshold-routing/    # Active
-├── service-health/                    # Coming soon
-├── patch-management/                  # Coming soon
-├── user-lifecycle/                    # Coming soon
-├── backup-management/                 # Coming soon
-├── subscription-management/           # Coming soon
-├── kernel-compliance/                 # Coming soon
-└── incident-remediation/              # Coming soon (201/301)
+│   ├── cert-lifecycle/          # Active
+│   ├── cert-expiry-switch/      # Coming soon
+│   ├── risk-based-routing/      # Coming soon
+│   └── proactive-assessment/    # Coming soon
+├── disk-utilization/            # Active
+├── service-health/              # Coming soon
+├── patch-management/            # Coming soon
+├── user-lifecycle/              # Coming soon
+├── backup-management/           # Coming soon
+├── subscription-management/     # Coming soon
+├── kernel-compliance/           # Coming soon
+└── incident-remediation/
+    ├── ai-incident-triage/      # Coming soon
+    └── multi-service-correlation/
 ```
 
-## Cert rotation 101
+## Cert rotation (Intelligent Cert Lifecycle)
 
 **Story:** Two certificates expire simultaneously on production services. Splunk detects both and fires alerts to AO. A single AI-powered workflow handles both, automatically selecting the correct renewal strategy for each certificate type.
 
@@ -102,7 +78,7 @@ Run Renewal Job (dynamic: agent-selected template)
 Validate Renewal (TLS handshake check)
 ```
 
-## Disk utilization 101
+## Disk utilization
 
 **Story:** Check disk usage on a mount, route by how full the filesystem is, remediate proportionally, notify Mattermost.
 
@@ -110,7 +86,7 @@ Validate Renewal (TLS handshake check)
 Check disk usage → Switch on % → Continue | Cleanup | Expand | Fallback → Notify
 ```
 
-See [disk-utilization/101-disk-threshold-routing/README.md](disk-utilization/101-disk-threshold-routing/README.md) for JT IDs, AO workflow import, and `test_disk_use_percent` branch testing.
+See [disk-utilization/README.md](disk-utilization/README.md) for JT IDs, AO workflow import, and `test_disk_use_percent` branch testing.
 
 ## AO vs AAP workflow comparison
 
@@ -123,7 +99,7 @@ See [disk-utilization/101-disk-threshold-routing/README.md](disk-utilization/101
 | Event triggers | Requires EDA rulebook | Native webhook triggers (Splunk, Prometheus, etc.) |
 | Visual builder | YAML defined | Drag-and-drop with live execution view |
 
-## Infrastructure requirements (101 demos)
+## Infrastructure requirements (active demos)
 
 | Component | Details |
 |---|---|

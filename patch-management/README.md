@@ -1,15 +1,43 @@
-# Patch Management Demos
+# Patch Management 101: Patch Severity Routing
 
-Switch-based patch response — one scan job, four remediation strategies based on severity.
+**Status: Coming soon** — scaffold only. Playbooks and AO workflow JSON not built yet.
 
-## The use case
+## What this demo shows
 
-After `dnf updateinfo` or a Red Hat Lightspeed/Insights scan, hosts report different patch urgency levels. Binary pass/fail cannot express "important but not emergency." A switch on `highest_severity` routes each host to the response that matches operational policy.
+Run a patch assessment playbook that publishes `highest_severity` from `dnf updateinfo` or an Insights scan. Switch on the value and route to the response that matches your change policy.
 
-**One-liner:** *One scan job. Four remediation strategies.*
+| `highest_severity` | Action |
+|---|---|
+| `critical` | Patch now + open maintenance window |
+| `important` | Schedule change window |
+| `moderate` | Add to weekly batch |
+| `none` | Report compliant, exit |
 
-## Demos
+## Workflow
 
-| Level | Demo | Status | What it shows |
-|---|---|---|---|
-| [101](101-patch-severity-routing/) | Patch Severity Routing | Coming soon | Scan → switch on severity → patch now, schedule, batch, or report compliant |
+```mermaid
+flowchart LR
+  Trigger[Manual or schedule] --> Scan[JT: patch_assessment]
+  Scan --> Switch{highest_severity}
+  Switch -->|critical| PatchNow[JT: patch_now]
+  Switch -->|important| Schedule[JT: schedule_change]
+  Switch -->|moderate| Batch[JT: weekly_batch]
+  Switch -->|none| Compliant[JT: report_compliant]
+  PatchNow --> Notify[Notify operators]
+  Schedule --> Notify
+  Batch --> Notify
+  Compliant --> Notify
+```
+
+## Playbooks
+
+🚧 **Under development** — playbook list and source links will be added when this demo is built.
+
+## Planned artifacts
+
+```
+
+  ao/
+  aap/playbooks/
+  README.md
+```

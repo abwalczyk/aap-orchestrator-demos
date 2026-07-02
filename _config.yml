@@ -28,7 +28,6 @@ exclude:
   - shared/
   - README.md
   - DEVELOPER.md
-  - DEMO_LEVELS.md
   - .gitignore
   - .cursor/
 

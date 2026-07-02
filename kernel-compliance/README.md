@@ -1,9 +1,39 @@
-# Kernel Compliance Demos
+# Kernel Compliance 101: Kernel Compliance Routing
 
-Switch-based kernel compliance — reboot required is not the same as drift or EOL.
+**Status: Coming soon** — scaffold only.
 
-## Demos
+## What this demo shows
 
-| Level | Demo | Status | What it shows |
-|---|---|---|---|
-| [101](101-kernel-compliance-routing/) | Kernel Compliance Routing | Coming soon | Scan kernel state → switch on compliance → patch, reboot, remediate drift, or flag EOL |
+Switch on kernel compliance state from a scan playbook:
+
+| `kernel_compliance` | Action |
+|---|---|
+| `compliant` | Log OK |
+| `reboot_required` | Schedule maintenance reboot |
+| `drift` | Apply kernel update playbook |
+| `eol` | Flag for migration planning |
+
+## Workflow
+
+```mermaid
+flowchart LR
+  Trigger[Schedule] --> Scan[JT: scan_kernel_compliance]
+  Scan --> Switch{kernel_compliance}
+  Switch -->|compliant| OK[JT: log_compliant]
+  Switch -->|reboot_required| Reboot[JT: schedule_reboot]
+  Switch -->|drift| Patch[JT: apply_kernel_update]
+  Switch -->|eol| Migrate[JT: flag_eol_migration]
+```
+
+## Playbooks
+
+🚧 **Under development** — playbook list and source links will be added when this demo is built.
+
+## Planned artifacts
+
+```
+
+  ao/
+  aap/playbooks/
+  README.md
+```

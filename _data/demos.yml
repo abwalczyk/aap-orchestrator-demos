@@ -2,7 +2,6 @@
   title: Sean Test — Disk Icon Experiment
   subtitle: Mermaid PNG test (disk utilization copy)
   category: sean-test
-  level: "101"
   status: active
   featured: true
   uses_ai: false
@@ -19,10 +18,10 @@
     playbooks: 6
     setup_minutes: 15
   url: /demos/sean-test/
-  github_path: sean-test/101-disk-threshold-routing/
-  github_doc: sean-test/101-disk-threshold-routing/README.md
-  setup_guide: sean-test/101-disk-threshold-routing/README.md
-  workflow_json: sean-test/101-disk-threshold-routing/ao/disk-demo-101.json
+  github_path: sean-test/
+  github_doc: sean-test/README.md
+  setup_guide: sean-test/README.md
+  workflow_json: sean-test/ao/disk-demo-101.json
   workflow_mermaid: |
     flowchart LR
       A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Manual trigger", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Disk Utilization Check", pos: "b", h: 96, constraint: "on" }
@@ -38,11 +37,10 @@
       classDef noBorder fill:transparent,stroke:transparent
       class A,B,C,D,E,F,G,H noBorder
 
-- slug: disk-utilization-101
+- slug: disk-utilization
   title: Disk Utilization & Remediation
   subtitle: Proportional disk response with switch routing
   category: disk-utilization
-  level: "101"
   status: active
   featured: true
   uses_ai: false
@@ -58,11 +56,11 @@
     workflows: 1
     playbooks: 6
     setup_minutes: 15
-  url: /demos/disk-utilization-101/
-  github_path: disk-utilization/101-disk-threshold-routing/
-  github_doc: disk-utilization/101-disk-threshold-routing/README.md
-  setup_guide: disk-utilization/101-disk-threshold-routing/README.md
-  workflow_json: disk-utilization/101-disk-threshold-routing/ao/disk-demo-101.json
+  url: /demos/disk-utilization/
+  github_path: disk-utilization/
+  github_doc: disk-utilization/README.md
+  setup_guide: disk-utilization/README.md
+  workflow_json: disk-utilization/ao/disk-demo-101.json
   workflow_mermaid: |
     flowchart LR
       A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Manual trigger", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Disk Utilization Check", pos: "b", h: 96, constraint: "on" }
@@ -78,11 +76,10 @@
       classDef noBorder fill:transparent,stroke:transparent
       class A,B,C,D,E,F,G,H noBorder
 
-- slug: cert-rotation-101
+- slug: cert-lifecycle
   title: Intelligent Cert Lifecycle
   subtitle: AI-driven certificate renewal routing
   category: cert-rotation
-  level: "101"
   status: active
   featured: true
   uses_ai: true
@@ -98,11 +95,11 @@
     workflows: 2
     playbooks: 4
     setup_minutes: 30
-  url: /demos/cert-rotation-101/
-  github_path: cert-rotation/101-cert-lifecycle/
-  github_doc: cert-rotation/101-cert-lifecycle/README.md
-  setup_guide: cert-rotation/101-cert-lifecycle/SETUP_GUIDE.md
-  workflow_json: cert-rotation/101-cert-lifecycle/ao/cert-demo-101-manual.json
+  url: /demos/cert-lifecycle/
+  github_path: cert-rotation/cert-lifecycle/
+  github_doc: cert-rotation/cert-lifecycle/README.md
+  setup_guide: cert-rotation/cert-lifecycle/SETUP_GUIDE.md
+  workflow_json: cert-rotation/cert-lifecycle/ao/cert-demo-101-manual.json
   arcade_embed: https://demo.arcade.software/xHT8OvDhtCYBSpZfSri2?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true
   arcade_title: Intelligent certificate renewal with Automation Orchestrator
   workflow_mermaid: |
@@ -113,11 +110,10 @@
       D --> E[Run renewal job — dynamic template]
       E --> F[Validate renewal — TLS check]
 
-- slug: cert-rotation-201
+- slug: risk-based-routing
   title: Risk-Based Routing
   subtitle: Risk-tier renewal decisions
   category: cert-rotation
-  level: "201"
   status: coming-soon
   featured: false
   uses_ai: true
@@ -132,9 +128,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 30
-  url: /demos/cert-rotation-201/
-  github_path: cert-rotation/201-risk-based-routing/
-  github_doc: cert-rotation/201-risk-based-routing/README.md
+  url: /demos/risk-based-routing/
+  github_path: cert-rotation/risk-based-routing/
+  github_doc: cert-rotation/risk-based-routing/README.md
   workflow_mermaid: |
     flowchart LR
       A[Cert expiry event] --> B[AI risk assessment]
@@ -147,11 +143,10 @@
       F --> H[Run renewal after approval]
       H --> G
 
-- slug: cert-rotation-301
+- slug: proactive-assessment
   title: Proactive Assessment
   subtitle: Scan before expiry
   category: cert-rotation
-  level: "301"
   status: coming-soon
   featured: false
   uses_ai: false
@@ -166,9 +161,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 45
-  url: /demos/cert-rotation-301/
-  github_path: cert-rotation/301-proactive-assessment/
-  github_doc: cert-rotation/301-proactive-assessment/README.md
+  url: /demos/proactive-assessment/
+  github_path: cert-rotation/proactive-assessment/
+  github_doc: cert-rotation/proactive-assessment/README.md
   workflow_mermaid: |
     flowchart LR
       A[Scheduled scan trigger] --> B[Inventory certificate expiry]
@@ -178,11 +173,10 @@
       D --> F[Validate TLS]
       F --> G[Compliance report]
 
-- slug: cert-rotation-102
+- slug: cert-expiry-switch
   title: Expiry Threshold Routing
   subtitle: Rule-based cert countdown switch
   category: cert-rotation
-  level: "102"
   status: coming-soon
   featured: false
   uses_ai: false
@@ -197,9 +191,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 15
-  url: /demos/cert-rotation-102/
-  github_path: cert-rotation/102-cert-expiry-switch/
-  github_doc: cert-rotation/102-cert-expiry-switch/README.md
+  url: /demos/cert-expiry-switch/
+  github_path: cert-rotation/cert-expiry-switch/
+  github_doc: cert-rotation/cert-expiry-switch/README.md
   workflow_mermaid: |
     flowchart LR
       A[Manual or schedule] --> B[Check cert expiry]
@@ -211,11 +205,10 @@
       F --> H[Validate TLS]
       G --> H
 
-- slug: service-health-101
+- slug: service-health
   title: Service State Routing
   subtitle: Four fixes from one service check
   category: service-health
-  level: "101"
   status: coming-soon
   featured: false
   uses_ai: false
@@ -229,9 +222,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 15
-  url: /demos/service-health-101/
-  github_path: service-health/101-service-state-routing/
-  github_doc: service-health/101-service-state-routing/README.md
+  url: /demos/service-health/
+  github_path: service-health/
+  github_doc: service-health/README.md
   workflow_mermaid: |
     flowchart LR
       A[Manual or schedule] --> B[Check service]
@@ -241,11 +234,10 @@
       C -->|failed| F[Restart service]
       C -->|not-found| G[Install service]
 
-- slug: patch-management-101
+- slug: patch-management
   title: Patch Severity Routing
   subtitle: One scan, four remediation strategies
   category: patch-management
-  level: "101"
   status: coming-soon
   featured: false
   uses_ai: false
@@ -259,9 +251,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 20
-  url: /demos/patch-management-101/
-  github_path: patch-management/101-patch-severity-routing/
-  github_doc: patch-management/101-patch-severity-routing/README.md
+  url: /demos/patch-management/
+  github_path: patch-management/
+  github_doc: patch-management/README.md
   workflow_mermaid: |
     flowchart LR
       A[Manual or schedule] --> B[Patch assessment]
@@ -271,11 +263,10 @@
       C -->|moderate| F[Weekly batch]
       C -->|none| G[Report compliant]
 
-- slug: user-lifecycle-101
+- slug: user-lifecycle
   title: Request Type Routing
   subtitle: One form, four runbooks
   category: user-lifecycle
-  level: "101"
   status: coming-soon
   featured: false
   uses_ai: false
@@ -290,9 +281,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 20
-  url: /demos/user-lifecycle-101/
-  github_path: user-lifecycle/101-request-type-routing/
-  github_doc: user-lifecycle/101-request-type-routing/README.md
+  url: /demos/user-lifecycle/
+  github_path: user-lifecycle/
+  github_doc: user-lifecycle/README.md
   workflow_mermaid: |
     flowchart LR
       A[Survey or webhook] --> B{request_type}
@@ -301,11 +292,10 @@
       B -->|role_change| E[Update role]
       B -->|termination| F[Terminate user]
 
-- slug: backup-management-101
+- slug: backup-management
   title: Backup Result Routing
   subtitle: Partial is neither pass nor fail
   category: backup-management
-  level: "101"
   status: coming-soon
   featured: false
   uses_ai: false
@@ -319,9 +309,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 15
-  url: /demos/backup-management-101/
-  github_path: backup-management/101-backup-result-routing/
-  github_doc: backup-management/101-backup-result-routing/README.md
+  url: /demos/backup-management/
+  github_path: backup-management/
+  github_doc: backup-management/README.md
   workflow_mermaid: |
     flowchart LR
       A[Schedule or event] --> B[Check backup result]
@@ -331,11 +321,10 @@
       C -->|failed| F[Escalate]
       C -->|skipped| G[Log skipped]
 
-- slug: subscription-management-101
+- slug: subscription-management
   title: RHEL Subscription Routing
   subtitle: Route by registration state
   category: subscription-management
-  level: "101"
   status: coming-soon
   featured: false
   uses_ai: false
@@ -349,9 +338,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 15
-  url: /demos/subscription-management-101/
-  github_path: subscription-management/101-rhel-subscription-routing/
-  github_doc: subscription-management/101-rhel-subscription-routing/README.md
+  url: /demos/subscription-management/
+  github_path: subscription-management/
+  github_doc: subscription-management/README.md
   workflow_mermaid: |
     flowchart LR
       A[Schedule] --> B[Check subscription]
@@ -361,11 +350,10 @@
       C -->|expired| F[Renew subscription]
       C -->|unregistered| G[Register system]
 
-- slug: kernel-compliance-101
+- slug: kernel-compliance
   title: Kernel Compliance Routing
   subtitle: Reboot required ≠ drift ≠ EOL
   category: kernel-compliance
-  level: "101"
   status: coming-soon
   featured: false
   uses_ai: false
@@ -379,9 +367,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 15
-  url: /demos/kernel-compliance-101/
-  github_path: kernel-compliance/101-kernel-compliance-routing/
-  github_doc: kernel-compliance/101-kernel-compliance-routing/README.md
+  url: /demos/kernel-compliance/
+  github_path: kernel-compliance/
+  github_doc: kernel-compliance/README.md
   workflow_mermaid: |
     flowchart LR
       A[Schedule] --> B[Scan kernel compliance]
@@ -391,11 +379,10 @@
       C -->|drift| F[Apply kernel update]
       C -->|eol| G[Flag EOL migration]
 
-- slug: incident-remediation-201
+- slug: ai-incident-triage
   title: AI Incident Triage
   subtitle: Intelligent incident response
   category: incident-remediation
-  level: "201"
   status: coming-soon
   featured: false
   uses_ai: true
@@ -409,9 +396,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 30
-  url: /demos/incident-remediation-201/
-  github_path: incident-remediation/
-  github_doc: incident-remediation/README.md
+  url: /demos/ai-incident-triage/
+  github_path: incident-remediation/ai-incident-triage/
+  github_doc: incident-remediation/ai-incident-triage/README.md
   workflow_mermaid: |
     flowchart LR
       A[Incident alert] --> B[AI triage agent]
@@ -420,11 +407,10 @@
       D --> E[Validate recovery]
       E --> F[Notify operators]
 
-- slug: incident-remediation-301
+- slug: multi-service-correlation
   title: Multi-Service Correlation
   subtitle: Correlate alerts before remediation
   category: incident-remediation
-  level: "301"
   status: coming-soon
   featured: false
   uses_ai: true
@@ -439,9 +425,9 @@
     workflows: 0
     playbooks: 0
     setup_minutes: 45
-  url: /demos/incident-remediation-301/
-  github_path: incident-remediation/
-  github_doc: incident-remediation/README.md
+  url: /demos/multi-service-correlation/
+  github_path: incident-remediation/multi-service-correlation/
+  github_doc: incident-remediation/multi-service-correlation/README.md
   workflow_mermaid: |
     flowchart LR
       A[Multiple correlated alerts] --> B[Correlate services]
