@@ -48,6 +48,6 @@ flowchart LR
 ```
 cert-expiry-switch/
   ao/
-  aap/playbooks/
+  playbooks/
   README.md
 ```

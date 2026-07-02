@@ -25,7 +25,7 @@
   workflow_mermaid: |
     flowchart LR
       A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Manual trigger", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Disk Utilization Check", pos: "b", h: 96, constraint: "on" }
-      B --> C@{ img: "__ASSET__/assets/icons/switch-node.png", label: "Switch on disk_use_percent", pos: "b", h: 96, constraint: "on" }
+      B --> C@{ img: "__ASSET__/assets/icons/switch-node.png", label: "Switch on disk_tier", pos: "b", h: 96, constraint: "on" }
       C -->|"< 80%"| D@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Continue", pos: "b", h: 96, constraint: "on" }
       C -->|"80–95%"| E@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Cleanup logs & cache", pos: "b", h: 96, constraint: "on" }
       C -->|"> 95%"| F@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Expand EBS volume", pos: "b", h: 96, constraint: "on" }
@@ -65,7 +65,7 @@
   workflow_mermaid: |
     flowchart LR
       A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Manual trigger", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Disk Utilization Check", pos: "b", h: 96, constraint: "on" }
-      B --> C@{ img: "__ASSET__/assets/icons/switch-node.png", label: "Switch on disk_use_percent", pos: "b", h: 96, constraint: "on" }
+      B --> C@{ img: "__ASSET__/assets/icons/switch-node.png", label: "Switch on disk_tier", pos: "b", h: 96, constraint: "on" }
       C -->|"< 80%"| D@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Continue", pos: "b", h: 96, constraint: "on" }
       C -->|"80–95%"| E@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Cleanup logs & cache", pos: "b", h: 96, constraint: "on" }
       C -->|"> 95%"| F@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Expand EBS volume", pos: "b", h: 96, constraint: "on" }

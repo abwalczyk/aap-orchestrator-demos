@@ -55,8 +55,8 @@
       ansible.builtin.set_stats:
         data:
           disk_mount: "{{ disk_mount }}"
-          disk_tier: "{{ disk_tier }}"
-          disk_use_percent: "{{ disk_use_percent }}"
+          disk_tier: "{{ disk_tier | trim }}"
+          disk_use_percent: "{{ disk_use_percent | int }}"
           notify_host: "{{ ansible_play_hosts | join(',') }}"
         per_host: false
         aggregate: false

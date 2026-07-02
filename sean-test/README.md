@@ -21,18 +21,18 @@ The flow is always the same shape: **check → route → remediate → notify**.
 
 | Classic workflow branching | automation orchestrator switch |
 |---|---|
-| Success / failure / always | Route on a **value** (`disk_use_percent`) |
+| Success / failure / always | Route on a **value** (`disk_tier` from `disk_use_percent`) |
 | Nested decision nodes | One switch, four ports |
 | One recovery playbook with `when:` soup | Small single-purpose job templates |
 
-The check playbook publishes `disk_use_percent` and `disk_tier` via `set_stats`. The switch reads `disk_use_percent` directly. Each remediate branch publishes a full notify artifact bundle; the notify job on that branch reads only from its upstream remediate step.
+The check playbook publishes `disk_use_percent` and `disk_tier` via `set_stats`. The switch routes on **`disk_tier`** (`ok` / `warn` / `critical`) — not raw numeric comparisons on `disk_use_percent`, because AO receives artifacts as strings and numeric `<` / `>` tests fail silently to the default port. Each remediate branch publishes a full notify artifact bundle; the notify job on that branch reads only from its upstream remediate step.
 
 ## Workflow
 
 ```mermaid
 flowchart LR
   A[Manual trigger] --> B[Disk Utilization Check]
-  B --> C{Switch on disk_use_percent}
+  B --> C{Switch on disk_tier}
   C -->|"< 80%"| D[Continue]
   C -->|"80–95%"| E[Cleanup logs & cache]
   C -->|"> 95%"| F[Expand EBS volume]
@@ -60,12 +60,12 @@ Import [`ao/disk-demo-101.json`](ao/disk-demo-101.json) — this is the **workin
 
 | Switch port | Condition | Remediate | Notify title |
 |---|---|---|---|
-| `<80%` | `disk_use_percent < 80` | Continue — no action | Disk Utilization OK (green) |
-| `80-95%` | `> 80 and < 95` | Cleanup dnf cache + old logs | Warning — Disk Cleanup (orange) |
-| `>95%` | `disk_use_percent > 95` | Expand EBS + grow filesystem | Critical — Disk Expanded (purple) |
-| `default` | no match (e.g. exactly 80 or 95) | Fallback — manual review | Unsupported Disk Tier (red) |
+| `<80%` | `disk_tier == 'ok'` | Continue — no action | Disk Utilization OK (green) |
+| `80-95%` | `disk_tier == 'warn'` | Cleanup dnf cache + old logs | Warning — Disk Cleanup (orange) |
+| `>95%` | `disk_tier == 'critical'` | Expand EBS + grow filesystem | Critical — Disk Expanded (purple) |
+| `default` | tier not ok/warn/critical | Fallback — manual review | Unsupported Disk Tier (red) |
 
-Thresholds are also defined in `group_vars/all.yml` (`disk_warn_threshold: 80`, `disk_critical_threshold: 95`). The AO switch uses `disk_use_percent` from check artifacts; keep switch bounds aligned with the playbook thresholds.
+Thresholds are defined in `group_vars/all.yml` (`disk_warn_threshold: 80`, `disk_critical_threshold: 95`). `check_disk.yml` buckets usage into `disk_tier` using those thresholds; keep them aligned with the switch case labels.
 
 ## What you need
 
@@ -78,7 +78,7 @@ Thresholds are also defined in `group_vars/all.yml` (`disk_warn_threshold: 80`, 
 
 ## Setup
 
-**1. Register six job templates** from `aap/playbooks/` (see table above).
+**1. Register six job templates** from `playbooks/` (see table above).
 
 **2. Import** [`ao/disk-demo-101.json`](ao/disk-demo-101.json) into automation orchestrator.
 
@@ -117,7 +117,7 @@ This avoids AO namespace errors when a converged notify node tries to read artif
 
 ### Artifact contract
 
-Every remediate playbook publishes the same keys via `aap/playbooks/tasks/publish_notify_artifacts.yml`:
+Every remediate playbook publishes the same keys via `playbooks/tasks/publish_notify_artifacts.yml`:
 
 `notify_host`, `disk_mount`, `disk_use_percent`, `disk_tier`, `remediation_action`, `disk_use_percent_before/after`, `total_reclaimed_mb`, `dnf_cache_*`, `logs_*`, `log_retention_days`, `dry_run`, `disk_expand_gb`, `volume_size_before_gb`, `volume_size_after_gb`
 
@@ -127,14 +127,14 @@ Branch-irrelevant fields are `unknown` / `0` / `false`. Re-sync the SCM project 
 
 | Playbook | What it does | Runs on |
 |---|---|---|
-| [`check_disk.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/disk-utilization/aap/playbooks/check_disk.yml) | Reads filesystem usage on the target mount and publishes `disk_use_percent` and `disk_tier` artifacts for the switch. | RHEL EC2 node |
-| [`remediate_disk_continue.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/disk-utilization/aap/playbooks/remediate_disk_continue.yml) | Healthy path when disk is below the warning threshold — logs status and publishes notify artifacts with no changes to the host. | RHEL EC2 node |
-| [`remediate_disk_cleanup.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/disk-utilization/aap/playbooks/remediate_disk_cleanup.yml) | Reclaims dnf package cache and old log archives, then publishes before/after usage stats for the warning notify tier. | RHEL EC2 node |
-| [`remediate_disk_expand.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/disk-utilization/aap/playbooks/remediate_disk_expand.yml) | Increases the root EBS volume in AWS, then runs `growpart` and `xfs_growfs` on the host for the critical expand path. | AWS (localhost) + RHEL EC2 node |
-| [`remediate_disk_fallback.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/disk-utilization/aap/playbooks/remediate_disk_fallback.yml) | Handles unexpected switch tiers (e.g. boundary values) with no remediation and publishes artifacts for the unsupported notify template. | RHEL EC2 node |
-| [`notify_chatroom.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/disk-utilization/aap/playbooks/notify_chatroom.yml) | Includes the tier-specific Mattermost template (ok / warn / critical / unsupported) and posts the remediation summary to chat. | localhost (Mattermost API) |
+| [`check_disk.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/sean-test/playbooks/check_disk.yml) | Reads filesystem usage on the target mount and publishes `disk_use_percent` and `disk_tier` artifacts for the switch. | RHEL EC2 node |
+| [`remediate_disk_continue.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/sean-test/playbooks/remediate_disk_continue.yml) | Healthy path when disk is below the warning threshold — logs status and publishes notify artifacts with no changes to the host. | RHEL EC2 node |
+| [`remediate_disk_cleanup.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/sean-test/playbooks/remediate_disk_cleanup.yml) | Reclaims dnf package cache and old log archives, then publishes before/after usage stats for the warning notify tier. | RHEL EC2 node |
+| [`remediate_disk_expand.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/sean-test/playbooks/remediate_disk_expand.yml) | Increases the root EBS volume in AWS, then runs `growpart` and `xfs_growfs` on the host for the critical expand path. | AWS (localhost) + RHEL EC2 node |
+| [`remediate_disk_fallback.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/sean-test/playbooks/remediate_disk_fallback.yml) | Handles unexpected switch tiers (e.g. boundary values) with no remediation and publishes artifacts for the unsupported notify template. | RHEL EC2 node |
+| [`notify_chatroom.yml`](https://github.com/ansible-tmm/aap-orchestrator-demos/blob/main/sean-test/playbooks/notify_chatroom.yml) | Includes the tier-specific Mattermost template (ok / warn / critical / unsupported) and posts the remediation summary to chat. | localhost (Mattermost API) |
 
-Notify templates live under `aap/playbooks/tasks/notify/`. Warn and critical templates have separate check-mode vs run-mode wording.
+Notify templates live under `playbooks/tasks/notify/`. Warn and critical templates have separate check-mode vs run-mode wording.
 
 ## Critical path — EBS expand
 

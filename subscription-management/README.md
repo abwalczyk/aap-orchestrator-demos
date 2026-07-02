@@ -34,6 +34,6 @@ flowchart LR
 ```
 
   ao/
-  aap/playbooks/
+  playbooks/
   README.md
 ```

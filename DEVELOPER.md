@@ -25,7 +25,7 @@ One demo per folder. Multi-demo categories (e.g. `cert-rotation/`) use a descrip
 <use-case>/
   README.md           # Demo docs and setup
   ao/                 # automation orchestrator workflow JSON (importable)
-  aap/playbooks/      # Ansible playbooks registered as AAP job templates
+  playbooks/      # Ansible playbooks registered as AAP job templates
   setup/              # Playbooks to provision the demo environment (where applicable)
   inventory/          # Ansible inventory
   group_vars/         # Variable defaults
@@ -94,7 +94,7 @@ See [disk-utilization/README.md](disk-utilization/README.md) for JT IDs, AO work
 |---|---|---|
 | Template selection | Hardcoded in workflow node | AI agent discovers and selects at runtime |
 | Multi-cert routing | Requires conditions per cert type | Agent reasons about cert type automatically |
-| Threshold routing | Nested success/failure nodes | Switch node routes on a value (`disk_use_percent`) |
+| Threshold routing | Nested success/failure nodes | Switch node routes on `disk_tier` (`ok` / `warn` / `critical`) from check artifacts |
 | Approval context | Basic approve/deny | Agent analysis, confidence %, blast radius |
 | Event triggers | Requires EDA rulebook | Native webhook triggers (Splunk, Prometheus, etc.) |
 | Visual builder | YAML defined | Drag-and-drop with live execution view |

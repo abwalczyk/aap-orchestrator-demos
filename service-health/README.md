@@ -40,7 +40,7 @@ When built, this level will include:
 ```
 
   ao/               # automation orchestrator workflow JSON
-  aap/playbooks/    # check_service + four remediate playbooks
+  playbooks/    # check_service + four remediate playbooks
   README.md         # this file
 ```
 
