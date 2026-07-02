@@ -29,13 +29,13 @@ The check playbook publishes `disk_use_percent` and `disk_tier` via `set_stats`.
 
 ```mermaid
 flowchart LR
-  A[Manual trigger] --> B[Disk Utilization Check — JT 115]
+  A[Manual trigger] --> B[Disk Utilization Check]
   B --> C{Switch on disk_use_percent}
-  C -->|"< 80%"| D[Continue — JT 118]
-  C -->|"80–95%"| E[Cleanup — JT 116]
-  C -->|"> 95%"| F[Expand — JT 119]
-  C -->|default| G[Fallback — JT 120]
-  D --> H[Notify — JT 117]
+  C -->|"< 80%"| D[Continue]
+  C -->|"80–95%"| E[Cleanup logs & cache]
+  C -->|"> 95%"| F[Expand EBS volume]
+  C -->|default| G[Fallback — manual review]
+  D --> H[Notify]
   E --> H
   F --> H
   G --> H
