@@ -19,18 +19,18 @@ The flow is always the same shape: **check → route → remediate → notify**.
 
 | Classic workflow branching | automation orchestrator switch |
 |---|---|
-| Success / failure / always | Route on a **value** (`disk_tier` from `disk_use_percent`) |
+| Success / failure / always | Route on a **value** (`disk_use_percent`) |
 | Nested decision nodes | One switch, four ports |
 | One recovery playbook with `when:` soup | Small single-purpose job templates |
 
-The check playbook publishes `disk_use_percent` and `disk_tier` via `set_stats`. The switch routes on **`disk_tier`** (`ok` / `warn` / `critical`) — not raw numeric comparisons on `disk_use_percent`, because AO receives artifacts as strings and numeric `<` / `>` tests fail silently to the default port. Each remediate branch publishes a full notify artifact bundle; the notify job on that branch reads only from its upstream remediate step.
+The check playbook publishes `disk_use_percent` (as a **number**) and `disk_tier` via `set_stats`. The AO **Switch** routes on `disk_use_percent` using comparison expressions (`< 80`, `>= 80 and <= 95`, `> 95`). Publish numeric artifacts **without** Jinja quotes — `"{{ disk_use_percent | int }}"` stringifies the value and breaks numeric comparisons in AO. `disk_tier` is still published for notify templates and debugging.
 
 ## Workflow
 
 ```mermaid
 flowchart LR
   A[Manual trigger] --> B[Disk Utilization Check]
-  B --> C{Switch on disk_tier}
+  B --> C{Switch on disk_use_percent}
   C -->|"< 80%"| D[Continue]
   C -->|"80–95%"| E[Cleanup logs & cache]
   C -->|"> 95%"| F[Expand EBS volume]
@@ -58,12 +58,12 @@ Import [`ao/disk-demo-101.json`](ao/disk-demo-101.json) — this is the **workin
 
 | Switch port | Condition | Remediate | Notify title |
 |---|---|---|---|
-| `<80%` | `disk_tier == 'ok'` | Continue — no action | Disk Utilization OK (green) |
-| `80-95%` | `disk_tier == 'warn'` | Cleanup dnf cache + old logs | Warning — Disk Cleanup (orange) |
-| `>95%` | `disk_tier == 'critical'` | Expand EBS + grow filesystem | Critical — Disk Expanded (purple) |
-| `default` | tier not ok/warn/critical | Fallback — manual review | Unsupported Disk Tier (red) |
+| `<80%` | `disk_use_percent < 80` | Continue — no action | Disk Utilization OK (green) |
+| `80-95%` | `>= 80 and <= 95` | Cleanup dnf cache + old logs | Warning — Disk Cleanup (orange) |
+| `>95%` | `disk_use_percent > 95` | Expand EBS + grow filesystem | Critical — Disk Expanded (purple) |
+| `default` | missing or non-numeric artifact | Fallback — manual review | Unsupported Disk Tier (red) |
 
-Thresholds are defined in `group_vars/all.yml` (`disk_warn_threshold: 80`, `disk_critical_threshold: 95`). `check_disk.yml` buckets usage into `disk_tier` using those thresholds; keep them aligned with the switch case labels.
+Thresholds match `group_vars/all.yml` (`disk_warn_threshold: 80`, `disk_critical_threshold: 95`). Use `>=` / `<=` on the warn port so boundary values (80 and 95) route correctly.
 
 ## What you need
 
@@ -95,7 +95,7 @@ On the **Check** node in AO, set `extra_vars`:
 | Continue (`<80%`) | `75` |
 | Cleanup (`80-95%`) | `85` |
 | Expand (`>95%`) | `96` |
-| Default / fallback | omit `test_disk_use_percent` on a host with unknown mount, or pass a non-numeric value to force an unclassified tier |
+| Default / fallback | omit `test_disk_use_percent` on a host with a missing mount, or pass a non-numeric value |
 
 Remove `test_disk_use_percent` (or leave empty) for a real disk check.
 

@@ -257,17 +257,17 @@
           {
             "port": "case_0",
             "label": "<80%",
-            "condition": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_tier} == 'ok'"
+            "condition": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_use_percent} < 80"
           },
           {
             "port": "case_1",
             "label": "80-95%",
-            "condition": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_tier} == 'warn'"
+            "condition": "(${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_use_percent} >= 80 and ${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_use_percent} <= 95)"
           },
           {
             "port": "case_2",
             "label": ">95%",
-            "condition": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_tier} == 'critical'"
+            "condition": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_use_percent} > 95"
           }
         ],
         "default_port": "default"

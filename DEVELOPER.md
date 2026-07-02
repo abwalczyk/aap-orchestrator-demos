@@ -94,7 +94,7 @@ See [disk-utilization/README.md](disk-utilization/README.md) for JT IDs, AO work
 |---|---|---|
 | Template selection | Hardcoded in workflow node | AI agent discovers and selects at runtime |
 | Multi-cert routing | Requires conditions per cert type | Agent reasons about cert type automatically |
-| Threshold routing | Nested success/failure nodes | Switch node routes on `disk_tier` (`ok` / `warn` / `critical`) from check artifacts |
+| Threshold routing | Nested success/failure nodes | Switch node routes on `disk_use_percent` with comparison expressions |
 | Approval context | Basic approve/deny | Agent analysis, confidence %, blast radius |
 | Event triggers | Requires EDA rulebook | Native webhook triggers (Splunk, Prometheus, etc.) |
 | Visual builder | YAML defined | Drag-and-drop with live execution view |
