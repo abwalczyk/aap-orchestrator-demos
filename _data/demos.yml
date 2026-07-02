@@ -91,6 +91,7 @@
   thumbnail:
     gradient: "linear-gradient(135deg, #2a1a4a 0%, #1a0d2e 50%, #3a2a1a 100%)"
     icon: "🔐"
+    video: /assets/previews/cert-lifecycle.mp4
   blurb: Splunk alert fires, AI agent picks PEM vs keystore renewal template, operator approves, AAP renews and validates TLS.
   stats:
     workflows: 2
