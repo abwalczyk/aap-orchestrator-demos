@@ -62,6 +62,8 @@
   github_doc: disk-utilization/README.md
   setup_guide: disk-utilization/README.md
   workflow_json: disk-utilization/ao/disk-demo-101.json
+  arcade_embed: https://demo.arcade.software/e5sYTB1uh7yLV1UgKg5h?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true
+  arcade_title: Disk utilization and remediation with Automation Orchestrator
   workflow_mermaid: |
     flowchart LR
       A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Manual trigger", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Disk Utilization Check", pos: "b", h: 96, constraint: "on" }
