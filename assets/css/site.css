@@ -478,6 +478,19 @@ a {
   margin-bottom: 32px;
 }
 
+.detail-hero__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.detail-hero__content {
+  flex: 1;
+  min-width: 0;
+}
+
 .detail-hero__main {
   margin-bottom: 16px;
 }
@@ -487,7 +500,7 @@ a {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
-  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .detail-hero h1 {
@@ -507,7 +520,6 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
 .detail-divider {
@@ -828,6 +840,11 @@ a {
 
   .main {
     padding: 24px 20px 32px;
+  }
+
+  .detail-hero__row {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .detail-hero__actions {
