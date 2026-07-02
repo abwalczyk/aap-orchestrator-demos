@@ -78,7 +78,14 @@ Thresholds match `group_vars/all.yml` (`disk_warn_threshold: 80`, `disk_critical
 
 **1. Register six job templates** from `playbooks/` (see table above).
 
-**2. Import** [`ao/disk-demo-101.json`](ao/disk-demo-101.json) into automation orchestrator.
+**2. Import** one workflow into automation orchestrator:
+
+| File | Switch routes on | Use when |
+|---|---|---|
+| [`ao/disk-demo-101.json`](ao/disk-demo-101.json) | `disk_use_percent` (numeric comparisons) | Demonstrating AO threshold expressions |
+| [`ao/disk-demo-tier-switch.json`](ao/disk-demo-tier-switch.json) | `disk_tier` (`ok` / `warn` / `critical`) | Reliable routing while troubleshooting numeric artifact typing |
+
+Both use the same check job and publish `disk_use_percent` plus `disk_tier`.
 
 **3. Adjust** `job_template_id` and `credential_id` on each node if your environment differs from nostromo.
 
