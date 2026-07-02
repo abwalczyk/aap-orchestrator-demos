@@ -15,8 +15,22 @@
   data-search="{{ demo.title | downcase }} {{ demo.subtitle | downcase }} {{ demo.blurb | downcase }} {{ demo.category | replace: '-', ' ' | downcase }} {{ demo.tags | join: ' ' | downcase }}"
 >
   <a href="{{ card_href }}" class="demo-card__link">
-    <div class="demo-card__thumb" style="background: {{ demo.thumbnail.gradient }};">
-      <span class="demo-card__icon">{{ demo.thumbnail.icon }}</span>
+    <div class="demo-card__thumb{% if demo.thumbnail.video %} demo-card__thumb--video{% endif %}" style="background: {{ demo.thumbnail.gradient }};">
+      {% if demo.thumbnail.video %}
+        <video
+          class="demo-card__video"
+          data-card-video
+          muted
+          loop
+          playsinline
+          preload="none"
+          aria-hidden="true"
+        >
+          <source src="{{ demo.thumbnail.video | relative_url }}" type="video/mp4">
+        </video>
+      {% else %}
+        <span class="demo-card__icon">{{ demo.thumbnail.icon }}</span>
+      {% endif %}
       {% if demo.status != "active" %}
         <span class="demo-card__badge demo-card__badge--soon">Coming soon</span>
       {% endif %}

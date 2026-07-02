@@ -51,6 +51,7 @@
   thumbnail:
     gradient: "linear-gradient(135deg, #1a3a2a 0%, #0d1f17 50%, #1a2a4a 100%)"
     icon: "💾"
+    video: /assets/previews/disk-utilization.mp4
   blurb: Check disk usage, route by percent full, and remediate proportionally — continue, cleanup logs, expand EBS, or escalate.
   stats:
     workflows: 1
