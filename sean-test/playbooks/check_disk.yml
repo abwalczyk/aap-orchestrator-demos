@@ -13,7 +13,7 @@
 
     - name: Use test disk use percent (skip live df)
       ansible.builtin.set_fact:
-        disk_use_percent: {{ _test_disk_use_percent | int }}
+        disk_use_percent: "{{ _test_disk_use_percent | int }}"
       when: _test_disk_use_percent | length > 0
 
     - name: Gather mount facts
@@ -36,7 +36,7 @@
 
     - name: Calculate disk use percent for mount
       ansible.builtin.set_fact:
-        disk_use_percent: {{ ((_mounts[0].block_used / _mounts[0].block_total) * 100) | int }}
+        disk_use_percent: "{{ ((_mounts[0].block_used / _mounts[0].block_total) * 100) | int }}"
       when: _test_disk_use_percent | length == 0
 
     - name: Bucket disk use into switch tier
@@ -53,11 +53,7 @@
 
     - name: Publish check artifacts for AO switch
       ansible.builtin.set_stats:
-        data:
-          disk_mount: "{{ disk_mount }}"
-          disk_tier: "{{ disk_tier | trim }}"
-          disk_use_percent: {{ disk_use_percent | int }}
-          notify_host: "{{ ansible_play_hosts | join(',') }}"
+        data: "{{ {'disk_mount': disk_mount, 'disk_tier': disk_tier | trim, 'disk_use_percent': disk_use_percent | int, 'notify_host': ansible_play_hosts | join(',')} }}"
         per_host: false
         aggregate: false
       run_once: true

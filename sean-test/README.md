@@ -25,7 +25,7 @@ The flow is always the same shape: **check → route → remediate → notify**.
 | Nested decision nodes | One switch, four ports |
 | One recovery playbook with `when:` soup | Small single-purpose job templates |
 
-The check playbook publishes `disk_use_percent` (as a **number**) and `disk_tier` via `set_stats`. The AO **Switch** routes on `disk_use_percent` using comparison expressions. Publish numeric artifacts without Jinja quotes so AO comparisons work.
+The check playbook publishes `disk_use_percent` (as a **number**) and `disk_tier` via `set_stats`. The AO **Switch** routes on `disk_use_percent` using comparison expressions. Use a Jinja dict expression in `set_stats` so the integer survives templating; unquoted `{{ ... }}` in YAML is invalid Ansible syntax.
 
 ## Workflow
 

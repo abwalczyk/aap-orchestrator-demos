@@ -23,7 +23,7 @@ The flow is always the same shape: **check → route → remediate → notify**.
 | Nested decision nodes | One switch, four ports |
 | One recovery playbook with `when:` soup | Small single-purpose job templates |
 
-The check playbook publishes `disk_use_percent` (as a **number**) and `disk_tier` via `set_stats`. The AO **Switch** routes on `disk_use_percent` using comparison expressions (`< 80`, `>= 80 and <= 95`, `> 95`). Publish numeric artifacts **without** Jinja quotes — `"{{ disk_use_percent | int }}"` stringifies the value and breaks numeric comparisons in AO. `disk_tier` is still published for notify templates and debugging.
+The check playbook publishes `disk_use_percent` (as a **number**) and `disk_tier` via `set_stats`. The AO **Switch** routes on `disk_use_percent` using comparison expressions (`< 80`, `>= 80 and <= 95`, `> 95`). Ansible requires quoted Jinja in YAML (`disk_use_percent: "{{ ... }}"`); unquoted `{{ ... }}` at the start of a value is a syntax error. To keep `disk_use_percent` numeric, `set_stats` passes a single Jinja dict expression so `disk_use_percent | int` stays an integer in the artifact payload. After a check run, confirm **Input → Schema** on the Switch step shows `number`, not `string`.
 
 ## Workflow
 
