@@ -3,21 +3,26 @@
   hosts: localhost
   connection: local
   gather_facts: false
-  vars:
-    aws_region: "{{ aws_region | default('us-east-1') }}"
-    xsos_event_queue_name: "{{ xsos_event_queue_name | default('aap-unknown-issue-rca') }}"
-    target_host: "{{ target_host | default('rhel01-nostromo.demoredhat.com') }}"
-    issue_summary: "{{ issue_summary | default('Unknown production issue — automated RCA requested') }}"
-    issue_severity: "{{ issue_severity | default('high') }}"
-    event_source: "{{ event_source | default('manual-demo') }}"
-    event_payload:
-      issue_id: "{{ issue_id | default(lookup('pipe', 'date +%s')) }}"
-      host: "{{ target_host }}"
-      summary: "{{ issue_summary }}"
-      severity: "{{ issue_severity }}"
-      source: "{{ event_source }}"
-      requested_action: xsos_analysis
   tasks:
+    - name: Apply defaults
+      ansible.builtin.set_fact:
+        aws_region: "{{ aws_region | default('us-east-1') }}"
+        xsos_event_queue_name: "{{ xsos_event_queue_name | default('aap-unknown-issue-rca') }}"
+        target_host: "{{ target_host | default('rhel01-nostromo.demoredhat.com') }}"
+        issue_summary: "{{ issue_summary | default('Unknown production issue — automated RCA requested') }}"
+        issue_severity: "{{ issue_severity | default('high') }}"
+        event_source: "{{ event_source | default('manual-demo') }}"
+
+    - name: Build event payload
+      ansible.builtin.set_fact:
+        event_payload:
+          issue_id: "{{ issue_id | default(lookup('pipe', 'date +%s')) }}"
+          host: "{{ target_host }}"
+          summary: "{{ issue_summary }}"
+          severity: "{{ issue_severity }}"
+          source: "{{ event_source }}"
+          requested_action: xsos_analysis
+
     - name: Resolve SQS queue URL when not provided
       ansible.builtin.command:
         argv:
