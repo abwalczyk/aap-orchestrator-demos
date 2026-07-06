@@ -23,29 +23,18 @@
           source: "{{ event_source }}"
           requested_action: xsos_analysis
 
-    - name: Resolve SQS queue URL when not provided
-      ansible.builtin.command:
-        argv:
-          - aws
-          - sqs
-          - get-queue-url
-          - --queue-name
-          - "{{ xsos_event_queue_name }}"
-          - --region
-          - "{{ aws_region }}"
-      register: sqs_url_lookup
-      changed_when: false
+    - name: Resolve queue URL when not provided
+      amazon.aws.sqs_queue:
+        name: "{{ xsos_event_queue_name }}"
+        region: "{{ aws_region }}"
+        state: present
+      register: xsos_event_queue
       when: sqs_queue_url is not defined or sqs_queue_url | length == 0 or sqs_queue_url == 'CHANGEME'
-      environment:
-        AWS_DEFAULT_REGION: "{{ aws_region }}"
-        AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
-        AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
-        AWS_SESSION_TOKEN: "{{ lookup('env', 'AWS_SESSION_TOKEN') | default('', true) }}"
 
-    - name: Set queue URL from lookup
+    - name: Set queue URL from module result
       ansible.builtin.set_fact:
-        sqs_queue_url: "{{ (sqs_url_lookup.stdout | from_json).QueueUrl }}"
-      when: sqs_url_lookup is not skipped
+        sqs_queue_url: "{{ xsos_event_queue.queue_url }}"
+      when: xsos_event_queue is not skipped
 
     - name: Validate SQS queue URL is configured
       ansible.builtin.assert:
@@ -58,23 +47,15 @@
 
     - name: Send unknown issue event to SQS
       ansible.builtin.command:
-        argv:
-          - aws
-          - sqs
-          - send-message
-          - --queue-url
-          - "{{ sqs_queue_url }}"
-          - --message-body
-          - "{{ event_payload | to_json }}"
-          - --region
-          - "{{ aws_region }}"
+        cmd: >-
+          python3 -c "import boto3, json, os; sqs=boto3.client('sqs', region_name=os.environ['AWS_DEFAULT_REGION']);
+          print(json.dumps(sqs.send_message(QueueUrl=os.environ['QUEUE_URL'], MessageBody=os.environ['MESSAGE_BODY'])))"
       register: sqs_send
       changed_when: sqs_send.rc == 0
       environment:
         AWS_DEFAULT_REGION: "{{ aws_region }}"
-        AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
-        AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
-        AWS_SESSION_TOKEN: "{{ lookup('env', 'AWS_SESSION_TOKEN') | default('', true) }}"
+        QUEUE_URL: "{{ sqs_queue_url }}"
+        MESSAGE_BODY: "{{ event_payload | to_json }}"
 
     - name: Show published event
       ansible.builtin.debug:
