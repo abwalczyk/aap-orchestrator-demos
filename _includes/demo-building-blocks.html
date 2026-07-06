@@ -1,0 +1,17 @@
+{% comment %}
+  AO canvas node types exercised by this demo.
+  Usage: {% include demo-building-blocks.html detail=detail %}
+{% endcomment %}
+{% assign detail = include.detail %}
+
+{% if detail.ao_building_blocks %}
+<section class="detail-section" id="ao-building-blocks">
+  <h2>AO building blocks</h2>
+  <p class="detail-section__lede">Automation orchestrator node types this workflow uses on the canvas.</p>
+  <ul class="ao-blocks">
+    {% for block in detail.ao_building_blocks %}
+      <li><span class="ao-block">{{ block }}</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}

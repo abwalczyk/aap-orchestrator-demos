@@ -7,6 +7,9 @@
   {% if detail.description or detail.use_case %}
     <a href="#description" class="demo-toc__link">Description</a>
   {% endif %}
+  {% if detail.ao_building_blocks %}
+    <a href="#ao-building-blocks" class="demo-toc__link">AO building blocks</a>
+  {% endif %}
   <a href="#interactive-experience" class="demo-toc__link">Interactive Experience</a>
   {% if detail.bullets %}
     <a href="#planned-scope" class="demo-toc__link">Planned scope</a>
