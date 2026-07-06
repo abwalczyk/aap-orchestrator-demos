@@ -30,7 +30,7 @@
       C -->|Auto-Patch Dev| D1@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Fetch & Commit to Gitea", pos: "b", h: 96, constraint: "on" }
       D1 --> D2@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Sync & Deploy via AAP", pos: "b", h: 96, constraint: "on" }
       D2 --> D3@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Run CVE Remediation", pos: "b", h: 96, constraint: "on" }
-      C -->|Approval Prod| E0[Approve Production Patch]
+      C -->|Approval Prod| E0@{ img: "__ASSET__/assets/icons/approval-node.png", label: "Approve Production Patch", pos: "b", h: 96, constraint: "on" }
       E0 -->|Approved| E1@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Fetch & Commit to Gitea", pos: "b", h: 96, constraint: "on" }
       E1 --> E2@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Sync & Deploy via AAP", pos: "b", h: 96, constraint: "on" }
       E2 --> E3@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Run CVE Remediation", pos: "b", h: 96, constraint: "on" }
@@ -38,7 +38,7 @@
       F1 --> F2[Parse Investigation Result]
       F2 --> F3@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Notify Mattermost", pos: "b", h: 96, constraint: "on" }
       classDef noBorder fill:transparent,stroke:transparent
-      class A,B,C,D1,D2,D3,E1,E2,E3,F1,F3 noBorder
+      class A,B,C,D1,D2,D3,E0,E1,E2,E3,F1,F3 noBorder
 
 - slug: disk-utilization
   title: Disk Utilization & Remediation
@@ -112,12 +112,12 @@
   workflow_mermaid: |
     flowchart LR
       A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Splunk Cert Alert", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/task-agent.png", label: "Plan Renewal", pos: "b", h: 96, constraint: "on" }
-      B --> C[Approve Renewal]
+      B --> C@{ img: "__ASSET__/assets/icons/approval-node.png", label: "Approve Renewal", pos: "b", h: 96, constraint: "on" }
       C -->|approved| D@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Run Renewal Job", pos: "b", h: 96, constraint: "on" }
       C -->|rejected| E[Renewal Rejected]
       D --> F@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Validate Renewal", pos: "b", h: 96, constraint: "on" }
       classDef noBorder fill:transparent,stroke:transparent
-      class A,B,D,F noBorder
+      class A,B,C,D,F noBorder
 
 - slug: risk-based-routing
   title: Risk-Based Routing
@@ -146,11 +146,13 @@
       B --> C{Risk tier}
       C -->|Low| D[Auto-renew]
       C -->|Medium| E[Notify + renew]
-      C -->|High| F[Approval required]
+      C -->|High| F@{ img: "__ASSET__/assets/icons/approval-node.png", label: "Approval required", pos: "b", h: 96, constraint: "on" }
       D --> G[Validate TLS]
       E --> G
       F --> H[Run renewal after approval]
       H --> G
+      classDef noBorder fill:transparent,stroke:transparent
+      class F noBorder
 
 - slug: proactive-assessment
   title: Proactive Assessment
