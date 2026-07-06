@@ -10,22 +10,30 @@
         xsos_event_queue_name: "{{ xsos_event_queue_name | default('aap-unknown-issue-rca') }}"
 
     - name: Create unknown-issue event queue
-      amazon.aws.sqs_queue:
-        name: "{{ xsos_event_queue_name }}"
-        region: "{{ aws_region }}"
-        state: present
-        message_retention_period: 345600
-        visibility_timeout: 300
-        tags:
-          Demo: event-driven-xsos-rca
-          ManagedBy: ansible
-      register: xsos_event_queue
+      ansible.builtin.command:
+        cmd: >-
+          python3 -c "import boto3, json; c=boto3.client('sqs', region_name='{{ aws_region }}');
+          r=c.create_queue(QueueName='{{ xsos_event_queue_name }}',
+          Attributes={'MessageRetentionPeriod':'345600','VisibilityTimeout':'300'},
+          tags={'Demo':'event-driven-xsos-rca','ManagedBy':'ansible'});
+          print(json.dumps(r))"
+      register: sqs_create
+      changed_when: sqs_create.rc == 0
+      failed_when: sqs_create.rc != 0 and 'QueueAlreadyExists' not in sqs_create.stderr
+
+    - name: Resolve queue URL
+      ansible.builtin.command:
+        cmd: >-
+          python3 -c "import boto3, json; c=boto3.client('sqs', region_name='{{ aws_region }}');
+          print(json.dumps(c.get_queue_url(QueueName='{{ xsos_event_queue_name }}')))"
+      register: sqs_url
+      changed_when: false
 
     - name: Show queue details for EDA and group_vars
       ansible.builtin.debug:
         msg:
           - "Queue name: {{ xsos_event_queue_name }}"
-          - "Queue URL: {{ xsos_event_queue.queue_url }}"
+          - "Queue URL: {{ (sqs_url.stdout | from_json).QueueUrl }}"
           - "Region: {{ aws_region }}"
           - "Next: set sqs_queue_url in group_vars/all.yml to the URL above."
           - "Then configure an EDA rulebook source on this queue and map events to run_xsos_analysis.yml."

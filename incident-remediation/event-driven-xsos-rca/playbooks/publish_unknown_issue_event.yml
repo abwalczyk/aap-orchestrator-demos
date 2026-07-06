@@ -24,17 +24,18 @@
           requested_action: xsos_analysis
 
     - name: Resolve queue URL when not provided
-      amazon.aws.sqs_queue:
-        name: "{{ xsos_event_queue_name }}"
-        region: "{{ aws_region }}"
-        state: present
-      register: xsos_event_queue
+      ansible.builtin.command:
+        cmd: >-
+          python3 -c "import boto3, json; c=boto3.client('sqs', region_name='{{ aws_region }}');
+          print(json.dumps(c.get_queue_url(QueueName='{{ xsos_event_queue_name }}')))"
+      register: sqs_url_lookup
+      changed_when: false
       when: sqs_queue_url is not defined or sqs_queue_url | length == 0 or sqs_queue_url == 'CHANGEME'
 
-    - name: Set queue URL from module result
+    - name: Set queue URL from lookup
       ansible.builtin.set_fact:
-        sqs_queue_url: "{{ xsos_event_queue.queue_url }}"
-      when: xsos_event_queue is not skipped
+        sqs_queue_url: "{{ (sqs_url_lookup.stdout | from_json).QueueUrl }}"
+      when: sqs_url_lookup is not skipped
 
     - name: Validate SQS queue URL is configured
       ansible.builtin.assert:
