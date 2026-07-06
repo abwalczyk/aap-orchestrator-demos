@@ -1,0 +1,8 @@
+{
+  "issue_id": "demo-20260706-001",
+  "host": "rca-target",
+  "summary": "Unknown production issue — automated RCA requested",
+  "severity": "high",
+  "source": "manual-demo",
+  "requested_action": "xsos_analysis"
+}

@@ -1,0 +1,17 @@
+---
+aws_region: us-east-1
+
+# Queue name used by setup_sqs_queue.yml. After setup, copy the printed URL here.
+xsos_event_queue_name: aap-unknown-issue-rca
+sqs_queue_url: CHANGEME
+
+# Default demo event fields for publish_unknown_issue_event.yml
+target_host: CHANGEME
+issue_summary: Unknown production issue — automated RCA requested
+issue_severity: high
+event_source: manual-demo
+
+# xSOS runtime options (see xsos -h)
+xsos_install: true
+xsos_output_dir: /var/tmp/xsos-rca
+xsos_sections: --all

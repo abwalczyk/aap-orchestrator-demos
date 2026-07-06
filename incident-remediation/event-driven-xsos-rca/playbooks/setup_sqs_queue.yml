@@ -1,0 +1,26 @@
+---
+- name: Setup AWS SQS queue for unknown-issue RCA events
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Create unknown-issue event queue
+      amazon.aws.sqs_queue:
+        name: "{{ xsos_event_queue_name }}"
+        region: "{{ aws_region }}"
+        state: present
+        message_retention_period: 345600
+        visibility_timeout: 300
+        tags:
+          Demo: event-driven-xsos-rca
+          ManagedBy: ansible
+      register: xsos_event_queue
+
+    - name: Show queue details for EDA and group_vars
+      ansible.builtin.debug:
+        msg:
+          - "Queue name: {{ xsos_event_queue_name }}"
+          - "Queue URL: {{ xsos_event_queue.queue_url }}"
+          - "Region: {{ aws_region }}"
+          - "Next: set sqs_queue_url in group_vars/all.yml to the URL above."
+          - "Then configure an EDA rulebook source on this queue and map events to run_xsos_analysis.yml."

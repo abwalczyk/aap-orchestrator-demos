@@ -1,0 +1,58 @@
+---
+- name: Publish unknown issue event to SQS
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    event_payload:
+      issue_id: "{{ issue_id | default(lookup('pipe', 'date +%s')) }}"
+      host: "{{ target_host }}"
+      summary: "{{ issue_summary }}"
+      severity: "{{ issue_severity }}"
+      source: "{{ event_source }}"
+      requested_action: xsos_analysis
+  tasks:
+    - name: Validate SQS queue URL is configured
+      ansible.builtin.assert:
+        that:
+          - sqs_queue_url is defined
+          - sqs_queue_url | length > 0
+          - sqs_queue_url != 'CHANGEME'
+        fail_msg: >-
+          Set sqs_queue_url in group_vars/all.yml (or pass -e sqs_queue_url=...)
+          after running setup_sqs_queue.yml.
+
+    - name: Validate target host is configured
+      ansible.builtin.assert:
+        that:
+          - target_host is defined
+          - target_host | length > 0
+          - target_host != 'CHANGEME'
+        fail_msg: Set target_host in group_vars/all.yml or pass -e target_host=<hostname>.
+
+    - name: Send unknown issue event to SQS
+      ansible.builtin.command:
+        argv:
+          - aws
+          - sqs
+          - send-message
+          - --queue-url
+          - "{{ sqs_queue_url }}"
+          - --message-body
+          - "{{ event_payload | to_json }}"
+          - --region
+          - "{{ aws_region }}"
+      register: sqs_send
+      changed_when: sqs_send.rc == 0
+      environment:
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+        AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        AWS_SESSION_TOKEN: "{{ lookup('env', 'AWS_SESSION_TOKEN') | default('', true) }}"
+
+    - name: Show published event
+      ansible.builtin.debug:
+        msg:
+          - "Published issue_id={{ event_payload.issue_id }} for host={{ event_payload.host }}"
+          - "EDA should consume this message and launch run_xsos_analysis.yml."
+          - "{{ sqs_send.stdout }}"
