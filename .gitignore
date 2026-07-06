@@ -2,8 +2,15 @@
 *.key
 .DS_Store
 *.retry
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 _site/
 .jekyll-cache/
 .bundle/
 vendor/bundle/
 Gemfile.lock
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+*-working.json
