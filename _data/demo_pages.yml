@@ -1,9 +1,15 @@
-sean-test:
-  description: Sandbox copy of disk utilization for testing custom Mermaid diagram assets. The workflow diagram uses an AAP job template PNG on the check node instead of a plain text box — all playbooks and AO JSON are identical to the disk utilization 101 demo.
+cve-remediation:
+  description: When a CVE alert arrives, an AI triage agent queries Red Hat Lightspeed for errata availability and reads the host environment from AAP inventory. Dev hosts with a fix available auto-patch through Gitea and AAP. Production hosts pause for human approval with a full audit trail. When no remediation exists, a second agent investigates CVSS, Advisor recommendations, and installed packages, then posts a structured report to Mattermost.
   why_it_matters:
-    - Uses the same disk workflow as production 101 — this page validates custom AO UI icons inside Mermaid without changing playbooks or workflow logic.
-    - PNG node cards make workflow diagrams recognizable to operators who live in the automation orchestrator canvas.
-    - Proves the marketplace can mirror real AO visuals while staying maintainable on GitHub Pages.
+    - Lightspeed MCP supplies live vulnerability and remediation data — routing is based on errata availability and host environment, not guesswork.
+    - Production patches require explicit approval; dev patches run unattended — governance matches how enterprises actually operate.
+    - The investigate path gives SREs actionable context when Red Hat has not yet shipped a fix, instead of a dead-end alert.
+  routes:
+    headers: [Route, Condition, Action]
+    rows:
+      - [auto_patch, "Dev host + errata available", "Fetch playbook from Lightspeed, commit to Gitea, sync AAP, run patch"]
+      - [approved_patch, "Production host + errata available", "Human approval, then same fetch-sync-run pipeline"]
+      - [investigate, "No errata or host not affected", "AI investigation → structured Mattermost report for SRE review"]
 
 disk-utilization:
   description: Servers run out of disk space at different urgency levels. At 72% you do nothing. At 85% you reclaim cache and old logs before it hurts. At 97% you add capacity — on EC2, expand the EBS volume, grow the partition, and extend XFS. Each path posts a tier-specific Mattermost message so the team knows what ran.

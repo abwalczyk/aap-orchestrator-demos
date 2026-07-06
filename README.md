@@ -20,6 +20,7 @@ Automation orchestrator is the workflow engine in AAP for visual, multi-step aut
 
 | Demo | Status | Description |
 |---|---|---|
+| [RHEL CVE Remediation](cve-remediation/) | **Active** | AI triage via Lightspeed MCP → auto-patch dev, approve prod, or investigate with Mattermost report |
 | [Disk Utilization & Remediation](disk-utilization/) | **Active** | Check disk usage → switch on % → continue, cleanup, EBS expand, or fallback → Mattermost notify |
 | [Intelligent Cert Lifecycle](cert-rotation/cert-lifecycle/) | **Active** | AI agent picks PEM vs keystore renewal; operator approves; AAP renews and validates |
 | [Service State Routing](service-health/) | Coming soon | Check service → switch on state → log OK, start, restart, or install |
@@ -38,6 +39,7 @@ See the [demo marketplace](https://ansible-tmm.github.io/aap-orchestrator-demos/
 | Folder | Focus |
 |---|---|
 | [cert-rotation/](cert-rotation/) | Certificate lifecycle — AI routing and expiry switches |
+| [cve-remediation/](cve-remediation/) | Intelligent CVE patching with Lightspeed MCP and approval gates |
 | [disk-utilization/](disk-utilization/) | Proportional disk remediation with switch routing |
 | [service-health/](service-health/) | Service state check → four remediation paths |
 | [patch-management/](patch-management/) | Patch severity switch routing |
