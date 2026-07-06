@@ -800,8 +800,23 @@ a {
 }
 
 .playbook-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: #c4b5fd;
   text-decoration: none;
+}
+
+.playbook-link__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.7;
+  color: #a78bfa;
+}
+
+.playbook-link:hover .playbook-link__icon {
+  opacity: 1;
 }
 
 .playbook-link:hover code {
