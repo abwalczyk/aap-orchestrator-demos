@@ -35,10 +35,10 @@
       E1 --> E2@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Sync & Deploy via AAP", pos: "b", h: 96, constraint: "on" }
       E2 --> E3@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Run CVE Remediation", pos: "b", h: 96, constraint: "on" }
       C -->|Investigate| F1@{ img: "__ASSET__/assets/icons/task-agent.png", label: "No Known Remediation", pos: "b", h: 96, constraint: "on" }
-      F1 --> F2[Parse Investigation Result]
+      F1 --> F2@{ img: "__ASSET__/assets/icons/script-node.png", label: "Parse Investigation Result", pos: "b", h: 96, constraint: "on" }
       F2 --> F3@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Notify Mattermost", pos: "b", h: 96, constraint: "on" }
       classDef noBorder fill:transparent,stroke:transparent
-      class A,B,C,D1,D2,D3,E0,E1,E2,E3,F1,F3 noBorder
+      class A,B,C,D1,D2,D3,E0,E1,E2,E3,F1,F2,F3 noBorder
 
 - slug: disk-utilization
   title: Disk Utilization & Remediation
