@@ -11,14 +11,14 @@
   {% if detail.bullets %}
     <a href="#planned-scope" class="demo-toc__link">Planned scope</a>
   {% endif %}
-  {% if detail.routes %}
-    <a href="#switch-routing" class="demo-toc__link">Switch routing</a>
-  {% endif %}
   {% if detail.related_table %}
     <a href="#related-demos" class="demo-toc__link">{{ detail.related_table.heading }}</a>
   {% endif %}
   {% if demo.workflow_mermaid %}
     <a href="#workflow" class="demo-toc__link">Workflow</a>
+  {% endif %}
+  {% if detail.routes %}
+    <a href="#switch-routing" class="demo-toc__link">Switch routing</a>
   {% endif %}
   {% if pb %}
     <a href="#playbooks" class="demo-toc__link">Playbooks</a>
