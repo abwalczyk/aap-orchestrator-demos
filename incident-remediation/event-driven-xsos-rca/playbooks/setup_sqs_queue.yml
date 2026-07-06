@@ -3,6 +3,9 @@
   hosts: localhost
   connection: local
   gather_facts: false
+  vars:
+    aws_region: "{{ aws_region | default('us-east-1') }}"
+    xsos_event_queue_name: "{{ xsos_event_queue_name | default('aap-unknown-issue-rca') }}"
   tasks:
     - name: Create unknown-issue event queue
       ansible.builtin.command:

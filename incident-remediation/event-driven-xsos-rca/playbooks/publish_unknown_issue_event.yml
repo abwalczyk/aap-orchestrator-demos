@@ -4,6 +4,12 @@
   connection: local
   gather_facts: false
   vars:
+    aws_region: "{{ aws_region | default('us-east-1') }}"
+    xsos_event_queue_name: "{{ xsos_event_queue_name | default('aap-unknown-issue-rca') }}"
+    target_host: "{{ target_host | default('rhel01-nostromo.demoredhat.com') }}"
+    issue_summary: "{{ issue_summary | default('Unknown production issue — automated RCA requested') }}"
+    issue_severity: "{{ issue_severity | default('high') }}"
+    event_source: "{{ event_source | default('manual-demo') }}"
     event_payload:
       issue_id: "{{ issue_id | default(lookup('pipe', 'date +%s')) }}"
       host: "{{ target_host }}"
@@ -12,6 +18,30 @@
       source: "{{ event_source }}"
       requested_action: xsos_analysis
   tasks:
+    - name: Resolve SQS queue URL when not provided
+      ansible.builtin.command:
+        argv:
+          - aws
+          - sqs
+          - get-queue-url
+          - --queue-name
+          - "{{ xsos_event_queue_name }}"
+          - --region
+          - "{{ aws_region }}"
+      register: sqs_url_lookup
+      changed_when: false
+      when: sqs_queue_url is not defined or sqs_queue_url | length == 0 or sqs_queue_url == 'CHANGEME'
+      environment:
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+        AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        AWS_SESSION_TOKEN: "{{ lookup('env', 'AWS_SESSION_TOKEN') | default('', true) }}"
+
+    - name: Set queue URL from lookup
+      ansible.builtin.set_fact:
+        sqs_queue_url: "{{ (sqs_url_lookup.stdout | from_json).QueueUrl }}"
+      when: sqs_url_lookup is not skipped
+
     - name: Validate SQS queue URL is configured
       ansible.builtin.assert:
         that:
@@ -19,16 +49,7 @@
           - sqs_queue_url | length > 0
           - sqs_queue_url != 'CHANGEME'
         fail_msg: >-
-          Set sqs_queue_url in group_vars/all.yml (or pass -e sqs_queue_url=...)
-          after running setup_sqs_queue.yml.
-
-    - name: Validate target host is configured
-      ansible.builtin.assert:
-        that:
-          - target_host is defined
-          - target_host | length > 0
-          - target_host != 'CHANGEME'
-        fail_msg: Set target_host in group_vars/all.yml or pass -e target_host=<hostname>.
+          Set sqs_queue_url extra var or ensure queue {{ xsos_event_queue_name }} exists in {{ aws_region }}.
 
     - name: Send unknown issue event to SQS
       ansible.builtin.command:
