@@ -1,4 +1,29 @@
 <div class="sidebar-footer">
+  <div class="sidebar-footer__brand">
+    <img
+      src="{{ '/assets/logos/red-hat-aap-reverse.png' | relative_url }}"
+      alt="Red Hat Ansible Automation Platform"
+      class="sidebar-footer__aap-logo"
+      width="188"
+      height="48"
+    >
+    <button
+      type="button"
+      class="sidebar-footer__info"
+      aria-label="About Ansible Automation Platform"
+      aria-describedby="sidebar-aap-info-tooltip"
+    >
+      <svg class="sidebar-footer__info-icon" viewBox="0 0 16 16" aria-hidden="true">
+        <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.25"/>
+        <circle cx="8" cy="5.25" r="0.75" fill="currentColor"/>
+        <path fill="currentColor" d="M7.25 7.5h1.5v4.25H7.25z"/>
+      </svg>
+      <span id="sidebar-aap-info-tooltip" class="sidebar-footer__tooltip" role="tooltip">
+        Automation orchestrator is a component of Ansible Automation Platform
+      </span>
+    </button>
+  </div>
+
   <p class="sidebar-footer__credit">
     Produced by the
     <a href="https://github.com/ansible-tmm" target="_blank" rel="noopener">Ansible-TMM</a>

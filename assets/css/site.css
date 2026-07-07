@@ -143,12 +143,79 @@ a {
 .sidebar-footer {
   margin-top: auto;
   padding-top: 20px;
-  border-top: 1px solid #1f1f1f;
+}
+
+.sidebar-footer__brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0 8px 16px;
+}
+
+.sidebar-footer__aap-logo {
+  display: block;
+  width: 100%;
+  max-width: 188px;
+  height: auto;
+}
+
+.sidebar-footer__info {
+  position: relative;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #666;
+  cursor: help;
+}
+
+.sidebar-footer__info:hover,
+.sidebar-footer__info:focus-visible {
+  color: #bbb;
+  outline: none;
+}
+
+.sidebar-footer__info-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.sidebar-footer__tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: max-content;
+  max-width: 210px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s, visibility 0.15s;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.sidebar-footer__info:hover .sidebar-footer__tooltip,
+.sidebar-footer__info:focus-visible .sidebar-footer__tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 .sidebar-footer__credit {
   margin: 0 0 12px;
-  padding: 0 12px;
+  padding: 16px 12px 0;
+  border-top: 1px solid #1f1f1f;
   font-size: 12px;
   color: #666;
   line-height: 1.45;
