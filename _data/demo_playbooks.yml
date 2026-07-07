@@ -23,7 +23,7 @@ disk-utilization:
       runs_on: RHEL EC2 node
     - name: remediate_disk_continue.yml
       path: disk-utilization/playbooks/remediate_disk_continue.yml
-      description: Healthy path when disk is below the warning threshold — logs status and publishes notify artifacts with no changes to the host.
+      description: Healthy path when disk is below the warning threshold. Logs status and publishes notify artifacts with no changes to the host.
       runs_on: RHEL EC2 node
     - name: remediate_disk_cleanup.yml
       path: disk-utilization/playbooks/remediate_disk_cleanup.yml

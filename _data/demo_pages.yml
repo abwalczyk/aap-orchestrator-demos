@@ -9,8 +9,8 @@ cve-remediation:
     - Script node
     - MCP integration
   why_it_matters:
-    - Lightspeed MCP supplies live vulnerability and remediation data — routing is based on errata availability and host environment, not guesswork.
-    - Production patches require explicit approval; dev patches run unattended — governance matches how enterprises actually operate.
+    - Lightspeed MCP supplies live vulnerability and remediation data, so routing is based on errata availability and host environment, not guesswork.
+    - Production patches require explicit approval; dev patches run unattended. Governance matches how enterprises actually operate.
     - The investigate path gives SREs actionable context when Red Hat has not yet shipped a fix, instead of a dead-end alert.
   routes:
     headers: [Route, Condition, Action]
@@ -20,18 +20,18 @@ cve-remediation:
       - [investigate, "No errata or host not affected", "AI investigation → structured Mattermost report for SRE review"]
 
 disk-utilization:
-  description: Servers run out of disk space at different urgency levels. At 72% you do nothing. At 85% you reclaim cache and old logs before it hurts. At 97% you add capacity — on EC2, expand the EBS volume, grow the partition, and extend XFS. Each path posts a tier-specific Mattermost message so the team knows what ran.
+  description: Servers run out of disk space at different urgency levels. At 72% you do nothing. At 85% you reclaim cache and old logs before it hurts. At 97% you add capacity. On EC2, expand the EBS volume, grow the partition, and extend XFS. Each path posts a tier-specific Mattermost message so the team knows what ran.
   ao_building_blocks:
     - Manual trigger
     - Switch node
     - AAP job template
   why_it_matters:
-    - One check playbook and one switch replace a nest of conditional jobs — disk tier drives the right response automatically.
-    - Remediation scales with severity — log and exit at low usage, cleanup at warning, expand capacity at critical instead of one-size-fits-all scripting.
+    - One check playbook and one switch replace a nest of conditional jobs. Disk tier drives the right response automatically.
+    - Remediation scales with severity: log and exit at low usage, cleanup at warning, expand capacity at critical instead of one-size-fits-all scripting.
     - Tier-specific Mattermost notifications tell operators exactly what ran, so on-call does not have to dig through job logs.
 
 cert-lifecycle:
-  description: Two certificates expire on production services at the same time. Splunk fires alerts to automation orchestrator. An AI agent analyzes each certificate, discovers available AAP job templates, and selects the correct renewal strategy — PEM for nginx, Java keystore for the API server — without hardcoded routing. An operator reviews the agent's analysis and confidence score, approves, and AAP renews and validates TLS automatically.
+  description: Two certificates expire on production services at the same time. Splunk fires alerts to automation orchestrator. An AI agent analyzes each certificate, discovers available AAP job templates, and selects the correct renewal strategy (PEM for nginx, Java keystore for the API server) without hardcoded routing. An operator reviews the agent's analysis and confidence score, approves, and AAP renews and validates TLS automatically.
   ao_building_blocks:
     - Webhook trigger
     - Agentic node

@@ -13,7 +13,7 @@
     gradient: "linear-gradient(135deg, #4a1a2a 0%, #1a0d14 50%, #2a1a3a 100%)"
     icon: "🛡️"
     video: /assets/previews/cve-remediation.mp4
-  blurb: CVE alert triggers AI triage against Lightspeed and AAP inventory — auto-patch dev, approve prod, or investigate when no errata exists.
+  blurb: CVE alert triggers AI triage against Lightspeed and AAP inventory. Auto-patch dev, approve prod, or investigate when no errata exists.
   stats:
     workflows: 1
     playbooks: 3
@@ -24,7 +24,7 @@
   setup_guide: cve-remediation/REQUIREMENTS.md
   workflow_json: cve-remediation/ao/rhel-cve-remediation-legacy.json
   arcade_embed: https://interact.redhat.com/share/WROy2xJc5Te0X1ru8hfo?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true
-  arcade_title: Automation orchestrator — CVE remediation
+  arcade_title: Automation orchestrator for CVE remediation
   workflow_mermaid: |
     flowchart LR
       A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "CVE Alert", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/task-agent.png", label: "AI Triage Agent", pos: "b", h: 96, constraint: "on" }
@@ -57,7 +57,7 @@
     gradient: "linear-gradient(135deg, #1a3a2a 0%, #0d1f17 50%, #1a2a4a 100%)"
     icon: "💾"
     video: /assets/previews/disk-utilization.mp4
-  blurb: Check disk usage, route by percent full, and remediate proportionally — continue, cleanup logs, expand EBS, or escalate.
+  blurb: Check disk usage, route by percent full, and remediate proportionally. Continue, cleanup logs, expand EBS, or escalate.
   stats:
     workflows: 1
     playbooks: 6
@@ -76,7 +76,7 @@
       C -->|"< 80%"| D@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Continue", pos: "b", h: 96, constraint: "on" }
       C -->|"80–95%"| E@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Cleanup logs & cache", pos: "b", h: 96, constraint: "on" }
       C -->|"> 95%"| F@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Expand EBS volume", pos: "b", h: 96, constraint: "on" }
-      C -->|default| G@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Fallback — manual review", pos: "b", h: 96, constraint: "on" }
+      C -->|default| G@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Fallback: manual review", pos: "b", h: 96, constraint: "on" }
       D --> H@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Notify", pos: "b", h: 96, constraint: "on" }
       E --> H
       F --> H
