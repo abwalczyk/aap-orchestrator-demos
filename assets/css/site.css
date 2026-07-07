@@ -65,16 +65,11 @@ a {
 }
 
 .logo-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .logo-text {
