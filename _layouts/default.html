@@ -6,8 +6,10 @@
   <title>{% if page.demo_slug %}{% assign page_demo = site.data.demos | where: "slug", page.demo_slug | first %}{{ page_demo.title }} · {% elsif page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
   <meta name="description" content="{% if page.demo_slug %}{{ page_demo.blurb }}{% else %}{{ page.description | default: site.description }}{% endif %}">
   <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
+  <script src="{{ '/assets/js/site-gate.js' | relative_url }}" defer></script>
 </head>
 <body>
+  {% include site-gate.html %}
   <div class="app">
     <aside class="sidebar">
       <a href="{{ '/' | relative_url }}" class="sidebar-logo">

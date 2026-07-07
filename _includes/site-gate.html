@@ -1,0 +1,28 @@
+<div id="site-gate" class="site-gate">
+  <div class="site-gate__card">
+    <div class="site-gate__brand">
+      <span class="logo-mark">AO</span>
+      <span class="site-gate__title">Automation orchestrator demos</span>
+    </div>
+    <p class="site-gate__badge">Limited access — tech preview</p>
+    <p class="site-gate__note">
+      This demo marketplace is available ahead of our August launch. When the
+      <strong>Automation orchestrator tech preview</strong> is publicly available,
+      we will open this site to everyone.
+    </p>
+    <form id="site-gate-form" class="site-gate__form" autocomplete="off">
+      <label class="site-gate__label" for="site-gate-password">Password</label>
+      <input
+        id="site-gate-password"
+        class="site-gate__input"
+        type="password"
+        name="password"
+        placeholder="Enter preview password"
+        required
+        autocomplete="current-password"
+      >
+      <p id="site-gate-error" class="site-gate__error" role="alert" hidden>Incorrect password. Try again.</p>
+      <button type="submit" class="site-gate__submit">Continue</button>
+    </form>
+  </div>
+</div>
