@@ -34,10 +34,24 @@ mermaid: true
 </div>
 
 {% assign description = detail.description | default: detail.use_case %}
-{% if description %}
-<section class="detail-section" id="description">
-  <h2>Description</h2>
-  <p>{{ description }}</p>
+{% if description or detail.why_it_matters %}
+<section class="detail-overview">
+  {% if description %}
+  <div class="detail-overview__col detail-section" id="description">
+    <h2>Description</h2>
+    <p>{{ description }}</p>
+  </div>
+  {% endif %}
+  {% if detail.why_it_matters %}
+  <div class="detail-overview__col detail-section detail-overview__value" id="why-it-matters">
+    <h2>Why it matters</h2>
+    <ul class="detail-list">
+      {% for item in detail.why_it_matters %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 </section>
 {% endif %}
 
@@ -116,17 +130,6 @@ mermaid: true
 {% endif %}
 
 {% include demo-playbooks.html slug=page.demo_slug %}
-
-{% if detail.why_it_matters %}
-<section class="detail-section" id="why-it-matters">
-  <h2>Why it matters</h2>
-  <ul class="detail-list">
-    {% for item in detail.why_it_matters %}
-      <li>{{ item }}</li>
-    {% endfor %}
-  </ul>
-</section>
-{% endif %}
 
 {% if detail.demo_ideas %}
 <section class="detail-section" id="demo-ideas">
