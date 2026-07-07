@@ -64,12 +64,17 @@ a {
   background: #141414;
 }
 
-.logo-mark {
+.logo-icon {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   object-fit: contain;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 .logo-text {
