@@ -1,5 +1,5 @@
-title: AAP automation orchestrator demos
-description: Hands-on automation orchestrator demo workflows
+title: Automation orchestrator demos
+description: Hands-on automation orchestrator demo workflows and use cases
 url: https://ansible-tmm.github.io
 baseurl: /aap-orchestrator-demos
 repository: ansible-tmm/aap-orchestrator-demos
