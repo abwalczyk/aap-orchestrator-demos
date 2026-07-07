@@ -105,10 +105,10 @@
     playbooks: 4
     setup_minutes: 30
   url: /demos/cert-lifecycle/
-  github_path: cert-rotation/cert-lifecycle/
-  github_doc: cert-rotation/cert-lifecycle/README.md
-  setup_guide: cert-rotation/cert-lifecycle/SETUP_GUIDE.md
-  workflow_json: cert-rotation/cert-lifecycle/ao/cert-demo-101-manual.json
+  github_path: cert-lifecycle/
+  github_doc: cert-lifecycle/README.md
+  setup_guide: cert-lifecycle/SETUP_GUIDE.md
+  workflow_json: cert-lifecycle/ao/cert-demo-101-manual.json
   arcade_embed: https://demo.arcade.software/xHT8OvDhtCYBSpZfSri2?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true
   arcade_title: Intelligent certificate renewal with Automation Orchestrator
   workflow_mermaid: |
@@ -140,8 +140,8 @@
     playbooks: 0
     setup_minutes: 30
   url: /demos/risk-based-routing/
-  github_path: cert-rotation/risk-based-routing/
-  github_doc: cert-rotation/risk-based-routing/README.md
+  github_path: risk-based-routing/
+  github_doc: risk-based-routing/README.md
   workflow_mermaid: |
     flowchart LR
       A[Cert expiry event] --> B[AI risk assessment]
@@ -175,8 +175,8 @@
     playbooks: 0
     setup_minutes: 45
   url: /demos/proactive-assessment/
-  github_path: cert-rotation/proactive-assessment/
-  github_doc: cert-rotation/proactive-assessment/README.md
+  github_path: proactive-assessment/
+  github_doc: proactive-assessment/README.md
   workflow_mermaid: |
     flowchart LR
       A[Scheduled scan trigger] --> B[Inventory certificate expiry]
@@ -205,8 +205,8 @@
     playbooks: 0
     setup_minutes: 15
   url: /demos/cert-expiry-switch/
-  github_path: cert-rotation/cert-expiry-switch/
-  github_doc: cert-rotation/cert-expiry-switch/README.md
+  github_path: cert-expiry-switch/
+  github_doc: cert-expiry-switch/README.md
   workflow_mermaid: |
     flowchart LR
       A[Manual or schedule] --> B[Check cert expiry]
@@ -410,8 +410,8 @@
     playbooks: 0
     setup_minutes: 30
   url: /demos/ai-incident-triage/
-  github_path: incident-remediation/ai-incident-triage/
-  github_doc: incident-remediation/ai-incident-triage/README.md
+  github_path: ai-incident-triage/
+  github_doc: ai-incident-triage/README.md
   workflow_mermaid: |
     flowchart LR
       A[Incident alert] --> B[AI triage agent]
@@ -439,8 +439,8 @@
     playbooks: 0
     setup_minutes: 45
   url: /demos/multi-service-correlation/
-  github_path: incident-remediation/multi-service-correlation/
-  github_doc: incident-remediation/multi-service-correlation/README.md
+  github_path: multi-service-correlation/
+  github_doc: multi-service-correlation/README.md
   workflow_mermaid: |
     flowchart LR
       A[Multiple correlated alerts] --> B[Correlate services]

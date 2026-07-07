@@ -9,7 +9,7 @@ The rulebook AAP syncs from the repo is:
 ## 1. AWS queue (one-time)
 
 ```bash
-cd incident-remediation/event-driven-xsos-rca
+cd event-driven-xsos-rca
 ansible-playbook -i inventory/hosts.yml playbooks/setup_sqs_queue.yml
 ```
 
@@ -21,9 +21,9 @@ Create three job templates against this repo (same inventory/credential as your 
 
 | Job template name | Playbook |
 |---|---|
-| `Linux - Setup xSOS SQS Queue` | `incident-remediation/event-driven-xsos-rca/playbooks/setup_sqs_queue.yml` |
-| `Linux - Publish Unknown Issue Event` | `incident-remediation/event-driven-xsos-rca/playbooks/publish_unknown_issue_event.yml` |
-| `Linux - Run xSOS Analysis` | `incident-remediation/event-driven-xsos-rca/playbooks/run_xsos_analysis.yml` |
+| `Linux - Setup xSOS SQS Queue` | `event-driven-xsos-rca/playbooks/setup_sqs_queue.yml` |
+| `Linux - Publish Unknown Issue Event` | `event-driven-xsos-rca/playbooks/publish_unknown_issue_event.yml` |
+| `Linux - Run xSOS Analysis` | `event-driven-xsos-rca/playbooks/run_xsos_analysis.yml` |
 
 For **`Linux - Run xSOS Analysis`** (required for EDA):
 

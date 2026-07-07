@@ -42,7 +42,7 @@ flowchart LR
 Requires AWS credentials with permission to create SQS queues (`amazon.aws` collection).
 
 ```bash
-cd incident-remediation/event-driven-xsos-rca
+cd event-driven-xsos-rca
 ansible-playbook -i inventory/hosts.yml playbooks/setup_sqs_queue.yml
 ```
 
@@ -79,7 +79,7 @@ Sample payload shape: [`test/sample_event.json`](test/sample_event.json).
 
 ### 4. EDA rulebook and activation
 
-Rulebook: [`extensions/eda/rulebooks/event-driven-xsos-rca.yml`](../../extensions/eda/rulebooks/event-driven-xsos-rca.yml)
+Rulebook: [`extensions/eda/rulebooks/event-driven-xsos-rca.yml`](../extensions/eda/rulebooks/event-driven-xsos-rca.yml)
 
 Full setup checklist: [`eda/SETUP_EDA.md`](eda/SETUP_EDA.md)
 

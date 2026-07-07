@@ -10,8 +10,8 @@ cd aap-orchestrator-demos
 
 ansible-galaxy collection install -r collections/requirements.yml
 
-# Cert rotation setup
-cat cert-rotation/cert-lifecycle/SETUP_GUIDE.md
+# Cert lifecycle setup
+cat cert-lifecycle/SETUP_GUIDE.md
 
 # Disk utilization
 cat disk-utilization/README.md
@@ -19,13 +19,13 @@ cat disk-utilization/README.md
 
 ## How demos are organized
 
-One demo per folder. Multi-demo categories (e.g. `cert-rotation/`) use a descriptive subfolder per demo.
+**One demo = one top-level folder.** Category labels (cert-rotation, incident-remediation, etc.) live in `_data/demos.yml` for marketplace filtering — not in the filesystem.
 
 ```
-<use-case>/
+<demo-slug>/
   README.md           # Demo docs and setup
   ao/                 # automation orchestrator workflow JSON (importable)
-  playbooks/      # Ansible playbooks registered as AAP job templates
+  playbooks/          # Ansible playbooks registered as AAP job templates
   setup/              # Playbooks to provision the demo environment (where applicable)
   inventory/          # Ansible inventory
   group_vars/         # Variable defaults
@@ -37,22 +37,23 @@ One demo per folder. Multi-demo categories (e.g. `cert-rotation/`) use a descrip
 aap-orchestrator-demos/
 ├── README.md
 ├── DEVELOPER.md
-├── _data/demos.yml
-├── cert-rotation/
-│   ├── cert-lifecycle/          # Active
-│   ├── cert-expiry-switch/      # Coming soon
-│   ├── risk-based-routing/      # Coming soon
-│   └── proactive-assessment/    # Coming soon
-├── disk-utilization/            # Active
-├── service-health/              # Coming soon
-├── patch-management/            # Coming soon
-├── user-lifecycle/              # Coming soon
-├── backup-management/           # Coming soon
-├── subscription-management/     # Coming soon
-├── kernel-compliance/           # Coming soon
-└── incident-remediation/
-    ├── ai-incident-triage/      # Coming soon
-    └── multi-service-correlation/
+├── _data/demos.yml          # Marketplace catalog (slug, category, paths)
+├── cert-lifecycle/          # Active — category: cert-rotation
+├── cert-expiry-switch/      # Coming soon
+├── risk-based-routing/      # Coming soon
+├── proactive-assessment/    # Coming soon
+├── cve-remediation/         # Active
+├── disk-utilization/        # Active
+├── event-driven-xsos-rca/   # In progress — category: incident-remediation
+├── ai-incident-triage/      # Coming soon
+├── multi-service-correlation/
+├── service-health/
+├── patch-management/
+├── user-lifecycle/
+├── backup-management/
+├── subscription-management/
+├── kernel-compliance/
+└── extensions/eda/rulebooks/   # EDA rulebooks (AAP discovery path)
 ```
 
 ## Cert rotation (Intelligent Cert Lifecycle)

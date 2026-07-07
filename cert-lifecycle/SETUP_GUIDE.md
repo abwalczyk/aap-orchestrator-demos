@@ -57,20 +57,20 @@ aws ec2 run-instances \
 # Point certdemo.demoredhat.com to the VM's public IP
 
 # Provision nginx + Vault
-ansible-playbook -i cert-rotation/cert-lifecycle/inventory/hosts.yml \
-  cert-rotation/cert-lifecycle/setup/provision_vm.yml \
+ansible-playbook -i cert-lifecycle/inventory/hosts.yml \
+  cert-lifecycle/setup/provision_vm.yml \
   -e ansible_ssh_private_key_file=$PWD/ao-cert-demo-key.pem \
   -e ansible_host=<VM_IP>
 
 # Provision api-server (Tomcat/Java keystore)
-ansible-playbook -i cert-rotation/cert-lifecycle/inventory/hosts.yml \
-  cert-rotation/cert-lifecycle/setup/provision_tomcat.yml \
+ansible-playbook -i cert-lifecycle/inventory/hosts.yml \
+  cert-lifecycle/setup/provision_tomcat.yml \
   -e ansible_ssh_private_key_file=$PWD/ao-cert-demo-key.pem \
   -e ansible_host=<VM_IP>
 
 # Generate expired certs for demo
-ansible-playbook -i cert-rotation/cert-lifecycle/inventory/hosts.yml \
-  cert-rotation/cert-lifecycle/setup/generate_expired_cert.yml \
+ansible-playbook -i cert-lifecycle/inventory/hosts.yml \
+  cert-lifecycle/setup/generate_expired_cert.yml \
   -e ansible_ssh_private_key_file=$PWD/ao-cert-demo-key.pem \
   -e ansible_host=<VM_IP>
 ```
@@ -92,7 +92,7 @@ sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keyc
 
 ```bash
 # On bastion or any host that can reach the demo VM
-ansible-playbook cert-rotation/cert-lifecycle/setup/provision_lab_services.yml \
+ansible-playbook cert-lifecycle/setup/provision_lab_services.yml \
   -e SPLUNK_PASSWORD='yourpassword' \
   -e ANTHROPIC_API_KEY='sk-ant-...' \
   -e CERT_DEMO_HOST='certdemo.demoredhat.com'
@@ -242,14 +242,14 @@ curl -s http://<bastion>:8065/api/v4/hooks/incoming \
 cd ~/work/src/aap-orchestrator-demos
 
 # Expire nginx cert
-ansible-playbook -i cert-rotation/cert-lifecycle/inventory/hosts.yml \
-  cert-rotation/cert-lifecycle/setup/generate_expired_cert.yml \
+ansible-playbook -i cert-lifecycle/inventory/hosts.yml \
+  cert-lifecycle/setup/generate_expired_cert.yml \
   -e ansible_ssh_private_key_file=$PWD/ao-cert-demo-key.pem \
   -e ansible_host=<VM_IP>
 
 # Expire api-server cert
-ansible-playbook -i cert-rotation/cert-lifecycle/inventory/hosts.yml \
-  cert-rotation/cert-lifecycle/setup/provision_tomcat.yml \
+ansible-playbook -i cert-lifecycle/inventory/hosts.yml \
+  cert-lifecycle/setup/provision_tomcat.yml \
   -e ansible_ssh_private_key_file=$PWD/ao-cert-demo-key.pem \
   -e ansible_host=<VM_IP> \
   --start-at-task="Pull CA certificate from Vault"

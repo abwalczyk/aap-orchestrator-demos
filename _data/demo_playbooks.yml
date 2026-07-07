@@ -46,19 +46,19 @@ cert-lifecycle:
   status: active
   items:
     - name: renew_certificate.yml
-      path: cert-rotation/cert-lifecycle/playbooks/renew_certificate.yml
+      path: cert-lifecycle/playbooks/renew_certificate.yml
       description: Pulls a new PEM certificate from Vault CA, installs it for nginx, and reloads the service.
       runs_on: RHEL node (nginx / PEM)
     - name: renew_keystore_certificate.yml
-      path: cert-rotation/cert-lifecycle/playbooks/renew_keystore_certificate.yml
+      path: cert-lifecycle/playbooks/renew_keystore_certificate.yml
       description: Renews a Java keystore certificate for the API server, updating the keystore and restarting the application.
       runs_on: RHEL node (Java keystore)
     - name: validate_certificate.yml
-      path: cert-rotation/cert-lifecycle/playbooks/validate_certificate.yml
+      path: cert-lifecycle/playbooks/validate_certificate.yml
       description: Runs an OpenSSL TLS handshake check and reports certificate subject, issuer, and expiry after renewal.
       runs_on: RHEL node
     - name: notify_mattermost.yml
-      path: cert-rotation/cert-lifecycle/playbooks/notify_mattermost.yml
+      path: cert-lifecycle/playbooks/notify_mattermost.yml
       description: Posts renewal status, agent confidence, and analysis summary to Mattermost after the workflow completes.
       runs_on: localhost (Mattermost API)
 

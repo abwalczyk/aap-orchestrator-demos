@@ -14,10 +14,15 @@ exclude:
   - node_modules/
   - .github/
   - sean_old_ignore/
-  - cert-rotation/
+  - cert-lifecycle/
+  - cert-expiry-switch/
+  - risk-based-routing/
+  - proactive-assessment/
+  - event-driven-xsos-rca/
+  - ai-incident-triage/
+  - multi-service-correlation/
   - disk-utilization/
   - cve-remediation/
-  - incident-remediation/
   - service-health/
   - patch-management/
   - user-lifecycle/
