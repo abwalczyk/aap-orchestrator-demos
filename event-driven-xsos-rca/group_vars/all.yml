@@ -3,10 +3,10 @@ aws_region: us-east-1
 
 # Queue name used by setup_sqs_queue.yml. After setup, copy the printed URL here.
 xsos_event_queue_name: aap-unknown-issue-rca
-sqs_queue_url: CHANGEME
+sqs_queue_url: https://sqs.us-east-1.amazonaws.com/962147768365/aap-unknown-issue-rca
 
 # Default demo event fields for publish_unknown_issue_event.yml
-target_host: CHANGEME
+target_host: rhel01-nostromo.demoredhat.com
 issue_summary: Unknown production issue — automated RCA requested
 issue_severity: high
 event_source: manual-demo
