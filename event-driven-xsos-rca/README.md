@@ -48,7 +48,7 @@ cd event-driven-xsos-rca
 ansible-playbook -i inventory/hosts.yml playbooks/setup_sqs_queue.yml
 ```
 
-Copy the printed **Queue URL** into `group_vars/all.yml`:
+Copy the printed **Queue URL** into `inventory/group_vars/all.yml`:
 
 ```yaml
 sqs_queue_url: https://sqs.us-east-1.amazonaws.com/123456789012/aap-unknown-issue-rca
@@ -64,7 +64,7 @@ export RCA_TARGET_USER=ec2-user
 export RCA_TARGET_SSH_KEY=~/.ssh/my-key.pem
 ```
 
-Update `group_vars/all.yml`:
+Update `inventory/group_vars/all.yml`:
 
 ```yaml
 target_host: rca-target

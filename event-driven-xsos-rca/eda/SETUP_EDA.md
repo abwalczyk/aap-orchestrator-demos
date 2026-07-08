@@ -2,9 +2,14 @@
 
 Use this checklist to test the SQS → EDA rulebook → automation orchestrator webhook flow end to end.
 
-The rulebook AAP syncs from the repo is:
+The rulebooks AAP syncs from the repo are:
 
-`extensions/eda/rulebooks/event-driven-xsos-rca.yml`
+| Rulebook file | Action | Notes |
+|---|---|---|
+| `extensions/eda/rulebooks/event-driven-xsos-rca.yml` | `run_job_template` → Linux - Post AO Webhook | Works without activation inventory (uses Controller cred) |
+| `extensions/eda/rulebooks/event-driven-xsos-rca-run-module.yml` | `run_module` → `ansible.builtin.uri` | **Requires inventory on activation** (e.g. Demo Inventory) |
+
+Use only one activation per queue at a time to avoid duplicate processing.
 
 ## 1. AWS queue (one-time)
 
@@ -13,7 +18,7 @@ cd event-driven-xsos-rca
 ansible-playbook -i inventory/hosts.yml playbooks/setup_sqs_queue.yml
 ```
 
-Copy the queue URL into `group_vars/all.yml` as `sqs_queue_url`.
+Copy the queue URL into `inventory/group_vars/all.yml` as `sqs_queue_url`.
 
 ## 2. Automation orchestrator workflow
 
@@ -75,9 +80,26 @@ Attach it to the rulebook activation.
 
 **Automation Decisions → Rulebook activations → Create**
 
+### Option A — `run_job_template` (current default)
+
 | Field | Value |
 |---|---|
 | Rulebook | Unknown issue xSOS RCA |
+| Inventory | *(optional)* |
+
+### Option B — `run_module` + `uri` (direct webhook POST)
+
+| Field | Value |
+|---|---|
+| Rulebook | Unknown issue xSOS RCA (run_module) |
+| Inventory | **Demo Inventory** (required — activation fails without it) |
+
+Disable activation **26** (or whichever uses the same SQS queue) before enabling this one.
+
+### Shared activation settings
+
+| Field | Value |
+|---|---|
 | Decision environment | de-supported (or your custom DE with `amazon.aws`) |
 | Project | Your synced Git project |
 | Credential | AWS credential from step 5 |
