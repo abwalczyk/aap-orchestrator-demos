@@ -49,9 +49,10 @@ http://54.159.25.87:8080/api/v1/webhooks/eda/357ce7cf-0138-409f-ad36-f2a9c2a97c5
 |---|---|
 | `Linux - Setup xSOS SQS Queue` | `event-driven-xsos-rca/playbooks/setup_sqs_queue.yml` |
 | `Linux - Publish Unknown Issue Event` | `event-driven-xsos-rca/playbooks/publish_unknown_issue_event.yml` |
+| `Linux - Post AO Webhook` | `event-driven-xsos-rca/playbooks/post_ao_webhook.yml` |
 | `Linux - Run xSOS Analysis` | `event-driven-xsos-rca/playbooks/run_xsos_analysis.yml` |
 
-`Linux - Run xSOS Analysis` is launched by the AO workflow, not directly by EDA.
+`Linux - Post AO Webhook` is launched by the EDA rulebook (`run_job_template`). `Linux - Run xSOS Analysis` is launched by the AO workflow, not directly by EDA.
 
 ## 4. EDA project sync
 
@@ -92,7 +93,7 @@ ao_webhook_token: ""
 ao_webhook_validate_certs: false
 ```
 
-The rulebook action uses `run_module` + `ansible.builtin.uri` to POST the SQS event body to AO. It does **not** call a playbook or job template directly.
+The rulebook action uses `run_job_template` to launch **Linux - Post AO Webhook**, which POSTs the SQS event body to the AO webhook URL. It does **not** call xSOS directly.
 
 Enable the activation and confirm it reaches **Running** status.
 

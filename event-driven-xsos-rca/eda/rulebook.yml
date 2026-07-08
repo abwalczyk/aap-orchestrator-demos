@@ -16,24 +16,16 @@
         and event.body.requested_action is defined
         and event.body.requested_action == "xsos_analysis"
       action:
-        run_module:
-          name: ansible.builtin.uri
-          module_args:
-            url: "{{ ao_webhook_url }}"
-            method: POST
-            headers: >-
-              {{ {'Content-Type': 'application/json'}
-                 | combine({'Authorization': 'Bearer ' + ao_webhook_token}
-                   if ao_webhook_token is defined
-                   and ao_webhook_token | length > 0
-                   else {}) }}
-            body_format: json
-            body:
+        run_job_template:
+          name: Linux - Post AO Webhook
+          organization: Default
+          job_args:
+            extra_vars:
               issue_id: "{{ event.body.issue_id }}"
               host: "{{ event.body.host }}"
               summary: "{{ event.body.summary }}"
               severity: "{{ event.body.severity | default('unknown') }}"
               source: "{{ event.body.source | default('eda-sqs') }}"
               requested_action: "{{ event.body.requested_action }}"
-            status_code: [200, 201, 202, 204]
-            validate_certs: "{{ ao_webhook_validate_certs | default(false) }}"
+              ao_webhook_url: "{{ ao_webhook_url }}"
+              ao_webhook_validate_certs: "{{ ao_webhook_validate_certs | default(false) }}"

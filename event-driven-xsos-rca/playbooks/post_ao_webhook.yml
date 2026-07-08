@@ -1,0 +1,26 @@
+---
+- name: POST unknown issue event to Automation Orchestrator webhook
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: POST payload to AO EDA webhook
+      ansible.builtin.uri:
+        url: "{{ ao_webhook_url }}"
+        method: POST
+        headers: >-
+          {{ {'Content-Type': 'application/json'}
+             | combine({'Authorization': 'Bearer ' + ao_webhook_token}
+               if ao_webhook_token is defined
+               and ao_webhook_token | length > 0
+               else {}) }}
+        body_format: json
+        body:
+          issue_id: "{{ issue_id }}"
+          host: "{{ host }}"
+          summary: "{{ summary }}"
+          severity: "{{ severity | default('unknown') }}"
+          source: "{{ source | default('eda-sqs') }}"
+          requested_action: "{{ requested_action }}"
+        status_code: [200, 201, 202, 204]
+        validate_certs: "{{ ao_webhook_validate_certs | default(false) | bool }}"
