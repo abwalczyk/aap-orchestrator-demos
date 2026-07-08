@@ -19,9 +19,12 @@
           module_args:
             url: "{{ ao_webhook_url }}"
             method: POST
-            headers:
-              Authorization: "Bearer {{ ao_webhook_token }}"
-              Content-Type: application/json
+            headers: >-
+              {{ {'Content-Type': 'application/json'}
+                 | combine({'Authorization': 'Bearer ' + ao_webhook_token}
+                   if ao_webhook_token is defined
+                   and ao_webhook_token | length > 0
+                   else {}) }}
             body_format: json
             body:
               issue_id: "{{ event.body.issue_id }}"

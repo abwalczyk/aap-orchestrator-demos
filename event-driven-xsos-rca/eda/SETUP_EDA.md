@@ -26,15 +26,21 @@ The workflow should read fields from the webhook payload, for example:
 
 Then run **Linux - Run xSOS Analysis** (or equivalent) with those values.
 
-Copy from the AO webhook trigger UI:
+Copy from the AO **EDA webhook trigger** UI:
 
-- **Webhook URL** → `ao_webhook_url`
-- **Bearer token** → `ao_webhook_token`
+- **URL** → `ao_webhook_url` (full POST endpoint)
+- **Bearer token** → `ao_webhook_token` (only if the connection instructions require one)
 
-Example URL shape:
+Example URL shape for EDA triggers:
 
 ```text
-https://<ao-host>/api/v1/webhooks/unknown-issue-xsos
+http://<ao-host>:8080/api/v1/webhooks/eda/<webhook-path-uuid>
+```
+
+Nostromo demo:
+
+```text
+http://54.159.25.87:8080/api/v1/webhooks/eda/357ce7cf-0138-409f-ad36-f2a9c2a97c50
 ```
 
 ## 3. AAP job templates
@@ -81,8 +87,8 @@ Attach it to the rulebook activation.
 ```yaml
 aws_region: us-east-1
 xsos_event_queue_name: aap-unknown-issue-rca
-ao_webhook_url: https://<ao-host>/api/v1/webhooks/unknown-issue-xsos
-ao_webhook_token: <token-from-ao-webhook-trigger>
+ao_webhook_url: http://54.159.25.87:8080/api/v1/webhooks/eda/357ce7cf-0138-409f-ad36-f2a9c2a97c50
+ao_webhook_token: ""
 ao_webhook_validate_certs: false
 ```
 
@@ -105,13 +111,20 @@ Expected result:
 4. AO workflow starts and launches **Linux - Run xSOS Analysis**
 5. xSOS report written under `/var/tmp/xsos-rca/` on the target host
 
-Manual webhook test (same payload AO expects):
+Manual webhook test (same payload AO expects). Run from the **repo root**:
 
 ```bash
-curl -X POST "$AO_WEBHOOK_URL" \
-  -H "Authorization: Bearer $AO_WEBHOOK_TOKEN" \
+curl -X POST "http://54.159.25.87:8080/api/v1/webhooks/eda/357ce7cf-0138-409f-ad36-f2a9c2a97c50" \
   -H "Content-Type: application/json" \
   -d @event-driven-xsos-rca/test/sample_event.json
+```
+
+Or from inside `event-driven-xsos-rca/`:
+
+```bash
+curl -X POST "http://54.159.25.87:8080/api/v1/webhooks/eda/357ce7cf-0138-409f-ad36-f2a9c2a97c50" \
+  -H "Content-Type: application/json" \
+  -d @test/sample_event.json
 ```
 
 ## Troubleshooting
