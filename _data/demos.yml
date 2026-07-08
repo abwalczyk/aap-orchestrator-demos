@@ -392,6 +392,39 @@
       C -->|drift| F[Apply kernel update]
       C -->|eol| G[Flag EOL migration]
 
+- slug: event-driven-xsos-rca
+  title: Event-Driven xSOS RCA
+  subtitle: Gather facts before you guess a fix
+  category: incident-remediation
+  status: coming-soon
+  featured: false
+  uses_ai: false
+  tags:
+    - Event-Driven
+    - EDA
+    - xSOS
+  thumbnail:
+    gradient: "linear-gradient(135deg, #1a2a3a 0%, #0d1520 50%, #2a1a2a 100%)"
+    icon: "🔍"
+  blurb: Unknown issue event hits SQS, EDA launches xSOS on the host, and operators get a structured RCA report before choosing remediation.
+  stats:
+    workflows: 0
+    playbooks: 3
+    setup_minutes: 30
+  url: /demos/event-driven-xsos-rca/
+  github_path: event-driven-xsos-rca/
+  github_doc: event-driven-xsos-rca/README.md
+  setup_guide: event-driven-xsos-rca/eda/SETUP_EDA.md
+  workflow_mermaid: |
+    flowchart LR
+      A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Unknown issue event", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/script-node.png", label: "AWS SQS queue", pos: "b", h: 96, constraint: "on" }
+      B --> C@{ img: "__ASSET__/assets/icons/script-node.png", label: "EDA rulebook", pos: "b", h: 96, constraint: "on" }
+      C --> D@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Run xSOS analysis", pos: "b", h: 96, constraint: "on" }
+      D --> E@{ img: "__ASSET__/assets/icons/script-node.png", label: "RCA report + artifacts", pos: "b", h: 96, constraint: "on" }
+      E --> F@{ img: "__ASSET__/assets/icons/task-agent.png", label: "Operator or AI next step", pos: "b", h: 96, constraint: "on" }
+      classDef noBorder fill:transparent,stroke:transparent
+      class A,B,C,D,E,F noBorder
+
 - slug: ai-incident-triage
   title: AI Incident Triage
   subtitle: Intelligent incident response

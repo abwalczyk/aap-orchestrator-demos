@@ -191,6 +191,22 @@ kernel-compliance:
       - [drift, Apply kernel update playbook]
       - [eol, Flag for migration planning]
 
+event-driven-xsos-rca:
+  description: When monitoring or ticketing cannot classify an incident, publish an unknown-issue event to AWS SQS. An EDA rulebook matches the payload, launches an AAP job on the reported host, and xSOS collects a fast, human-readable system summary. Reports are saved on the host and published as job artifacts via set_stats so operators or a downstream automation orchestrator agent can decide remediation.
+  why_it_matters:
+    - Unknown issues are where automation usually breaks down. This pattern gathers facts first instead of guessing a remediation playbook.
+    - EDA reacts to the event in seconds; xSOS gives SREs structured host context without manual SSH triage.
+    - set_stats artifacts are ready to chain into automation orchestrator for AI-assisted remediation decisions.
+  bullets:
+    - One-time SQS queue setup and a publish playbook to simulate unknown-issue alerts
+    - EDA rulebook with AWS SQS source and conditional launch of the xSOS analysis job template
+    - xSOS install, run, and report save on the affected RHEL host
+    - Job artifacts (issue context, report path, preview) for downstream AO or MCP workflows
+  demo_ideas:
+    - Publish a demo event and walk through EDA firing the analysis job within seconds
+    - Show the xSOS report on the target host and the set_stats artifacts in the job output
+    - Discuss chaining artifacts to an automation orchestrator Task Agent for remediation routing
+
 ai-incident-triage:
   description: When an incident alert fires, an AI agent analyzes context, selects a remediation strategy, and routes to the appropriate AAP playbook — without hardcoded if-statements in the workflow.
   why_it_matters:

@@ -89,6 +89,22 @@ subscription-management:
 kernel-compliance:
   status: under-development
 
+event-driven-xsos-rca:
+  status: active
+  items:
+    - name: setup_sqs_queue.yml
+      path: event-driven-xsos-rca/playbooks/setup_sqs_queue.yml
+      description: Creates the AWS SQS queue for unknown-issue RCA events (one-time per account/region).
+      runs_on: localhost (AWS API)
+    - name: publish_unknown_issue_event.yml
+      path: event-driven-xsos-rca/playbooks/publish_unknown_issue_event.yml
+      description: Publishes a demo unknown-issue JSON payload to SQS to simulate an alert integration.
+      runs_on: localhost (AWS CLI)
+    - name: run_xsos_analysis.yml
+      path: event-driven-xsos-rca/playbooks/run_xsos_analysis.yml
+      description: Installs xSOS if needed, runs analysis on the target host, saves the report, and publishes RCA artifacts.
+      runs_on: RHEL target host (EDA or manual)
+
 ai-incident-triage:
   status: under-development
 
