@@ -92,6 +92,7 @@
       },
       "config": {
         "credential_id": "YOUR_AO_AAP_CREDENTIAL_ID",
+        "job_template_id": "22",
         "job_template_name": "SNOW - Auto Remediation",
         "organization_name": "Default",
         "extra_vars": {
@@ -150,6 +151,7 @@
       },
       "config": {
         "credential_id": "YOUR_AO_AAP_CREDENTIAL_ID",
+        "job_template_id": "22",
         "job_template_name": "SNOW - Auto Remediation",
         "organization_name": "Default",
         "extra_vars": {
