@@ -2,7 +2,7 @@
 # AAP discovers rulebooks from extensions/eda/rulebooks/ at the repo root.
 # This file mirrors extensions/eda/rulebooks/event-driven-xsos-rca.yml for local browsing.
 - name: Unknown issue xSOS RCA
-  hosts: all
+  hosts: localhost
   sources:
     - name: unknown_issue_sqs
       amazon.aws.aws_sqs_queue:
@@ -10,19 +10,27 @@
         name: "{{ xsos_event_queue_name | default('aap-unknown-issue-rca') }}"
         delay_seconds: 5
   rules:
-    - name: Run xSOS analysis for unknown issue events
+    - name: Trigger AO xSOS workflow for unknown issue events
       condition: >-
         event.body is defined
         and event.body.requested_action is defined
         and event.body.requested_action == "xsos_analysis"
       action:
-        run_job_template:
-          name: "{{ xsos_job_template_name | default('Linux - Run xSOS Analysis') }}"
-          organization: "{{ aap_organization | default('Default') }}"
-          add_event_uuid_label: true
-          job_args:
-            extra_vars:
-              target_host: "{{ event.body.host }}"
+        run_module:
+          name: ansible.builtin.uri
+          module_args:
+            url: "{{ ao_webhook_url }}"
+            method: POST
+            headers:
+              Authorization: "Bearer {{ ao_webhook_token }}"
+              Content-Type: application/json
+            body_format: json
+            body:
               issue_id: "{{ event.body.issue_id }}"
-              issue_summary: "{{ event.body.summary }}"
-              issue_severity: "{{ event.body.severity | default('unknown') }}"
+              host: "{{ event.body.host }}"
+              summary: "{{ event.body.summary }}"
+              severity: "{{ event.body.severity | default('unknown') }}"
+              source: "{{ event.body.source | default('eda-sqs') }}"
+              requested_action: "{{ event.body.requested_action }}"
+            status_code: [200, 201, 202, 204]
+            validate_certs: "{{ ao_webhook_validate_certs | default(false) }}"

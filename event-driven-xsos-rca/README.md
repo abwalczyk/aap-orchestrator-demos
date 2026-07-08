@@ -7,8 +7,9 @@
 A monitoring or ticketing integration cannot classify an incident. Instead of guessing a remediation playbook, automation:
 
 1. Receives an **unknown issue** event from **AWS SQS**
-2. **EDA** launches Ansible on the reported host
-3. **xSOS** collects a fast, human-readable system summary for operators or an AI agent to reason over
+2. **EDA** POSTs the event to the **automation orchestrator webhook**
+3. **AO** launches xSOS analysis on the reported host via AAP
+4. **xSOS** collects a fast, human-readable system summary for operators or an AI agent to reason over
 
 This pattern complements automation orchestrator agent workflows: EDA reacts to the event; xSOS gathers facts; AO or MCP can decide next steps.
 
@@ -22,9 +23,10 @@ This pattern complements automation orchestrator agent workflows: EDA reacts to 
 flowchart LR
   A[Unknown issue detected] --> B[SQS queue]
   B --> C[EDA rulebook]
-  C --> D[Run xSOS analysis]
-  D --> E[RCA report + artifacts]
-  E --> F[Operator or AI agent decides next step]
+  C --> D[AO webhook trigger]
+  D --> E[Run xSOS analysis]
+  E --> F[RCA report + artifacts]
+  F --> G[Operator or AI decides next step]
 ```
 
 ## Playbooks

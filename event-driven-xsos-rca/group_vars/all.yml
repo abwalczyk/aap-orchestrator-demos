@@ -5,6 +5,12 @@ aws_region: us-east-1
 xsos_event_queue_name: aap-unknown-issue-rca
 sqs_queue_url: https://sqs.us-east-1.amazonaws.com/962147768365/aap-unknown-issue-rca
 
+# Automation orchestrator webhook (copy from AO workflow trigger UI, not a Jira URL)
+# Example: https://<ao-host>/api/v1/webhooks/unknown-issue-xsos
+ao_webhook_url: CHANGEME
+ao_webhook_token: CHANGEME
+ao_webhook_validate_certs: false
+
 # Default demo event fields for publish_unknown_issue_event.yml
 target_host: rhel01-nostromo.demoredhat.com
 issue_summary: Unknown production issue — automated RCA requested

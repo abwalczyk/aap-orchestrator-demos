@@ -192,7 +192,7 @@ kernel-compliance:
       - [eol, Flag for migration planning]
 
 event-driven-xsos-rca:
-  description: When monitoring or ticketing cannot classify an incident, publish an unknown-issue event to AWS SQS. An EDA rulebook matches the payload, launches an AAP job on the reported host, and xSOS collects a fast, human-readable system summary. Reports are saved on the host and published as job artifacts via set_stats so operators or a downstream automation orchestrator agent can decide remediation.
+  description: When monitoring or ticketing cannot classify an incident, publish an unknown-issue event to AWS SQS. An EDA rulebook matches the payload and POSTs it to an automation orchestrator webhook. The AO workflow launches xSOS on the reported host, saves the report, and publishes job artifacts for downstream triage.
   why_it_matters:
     - Unknown issues are where automation usually breaks down. This pattern gathers facts first instead of guessing a remediation playbook.
     - EDA reacts to the event in seconds; xSOS gives SREs structured host context without manual SSH triage.

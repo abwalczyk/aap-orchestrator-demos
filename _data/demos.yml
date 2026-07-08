@@ -65,7 +65,7 @@
   url: /demos/disk-utilization/
   github_path: disk-utilization/
   github_doc: disk-utilization/README.md
-  setup_guide: disk-utilization/README.md
+  setup_guide: disk-utilization/SETUP_GUIDE.md
   workflow_json: disk-utilization/ao/disk-demo-101.json
   arcade_embed: https://demo.arcade.software/e5sYTB1uh7yLV1UgKg5h?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true
   arcade_title: Disk utilization and remediation with Automation Orchestrator
@@ -419,11 +419,12 @@
     flowchart LR
       A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Unknown issue event", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/script-node.png", label: "AWS SQS queue", pos: "b", h: 96, constraint: "on" }
       B --> C@{ img: "__ASSET__/assets/icons/script-node.png", label: "EDA rulebook", pos: "b", h: 96, constraint: "on" }
-      C --> D@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Run xSOS analysis", pos: "b", h: 96, constraint: "on" }
-      D --> E@{ img: "__ASSET__/assets/icons/script-node.png", label: "RCA report + artifacts", pos: "b", h: 96, constraint: "on" }
-      E --> F@{ img: "__ASSET__/assets/icons/task-agent.png", label: "Operator or AI next step", pos: "b", h: 96, constraint: "on" }
+      C --> D@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "AO webhook trigger", pos: "b", h: 96, constraint: "on" }
+      D --> E@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Run xSOS analysis", pos: "b", h: 96, constraint: "on" }
+      E --> F@{ img: "__ASSET__/assets/icons/script-node.png", label: "RCA report + artifacts", pos: "b", h: 96, constraint: "on" }
+      F --> G@{ img: "__ASSET__/assets/icons/task-agent.png", label: "Operator or AI next step", pos: "b", h: 96, constraint: "on" }
       classDef noBorder fill:transparent,stroke:transparent
-      class A,B,C,D,E,F noBorder
+      class A,B,C,D,E,F,G noBorder
 
 - slug: ai-incident-triage
   title: AI Incident Triage
