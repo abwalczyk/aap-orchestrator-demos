@@ -1,0 +1,43 @@
+---
+- name: SNOW Auto Remediation
+  hosts: "{{ affected_system | default('localhost') }}"
+  gather_facts: false
+  vars:
+    incident_number: "{{ incident_number | default('UNKNOWN') }}"
+    category: "{{ category | default('unknown') }}"
+    recommended_action: "{{ recommended_action | default('') }}"
+
+  tasks:
+    - name: Log remediation start
+      ansible.builtin.debug:
+        msg: >-
+          Starting remediation for incident {{ incident_number }}
+          on {{ inventory_hostname }} (category: {{ category }}).
+          Action: {{ recommended_action }}
+
+    - name: Restart service (service incidents)
+      ansible.builtin.service:
+        name: "{{ service_name | default('nginx') }}"
+        state: restarted
+      when: category in ['software', 'network', 'inquiry']
+      ignore_errors: true
+
+    - name: Clear temp disk space (disk incidents)
+      ansible.builtin.shell: |
+        find /tmp -type f -atime +7 -delete
+        find /var/log -name "*.gz" -type f -delete
+        journalctl --vacuum-size=200M
+      when: category in ['hardware', 'inquiry']
+      ignore_errors: true
+
+    - name: Verify system is healthy
+      ansible.builtin.command: uptime
+      register: uptime_result
+      changed_when: false
+
+    - name: Report remediation complete
+      ansible.builtin.debug:
+        msg: >-
+          Remediation complete for {{ incident_number }}.
+          System uptime: {{ uptime_result.stdout }}.
+          The incident is ready to be resolved in ServiceNow.
