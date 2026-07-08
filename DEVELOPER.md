@@ -87,7 +87,7 @@ Validate Renewal (TLS handshake check)
 Check disk usage → Switch on % → Continue | Cleanup | Expand | Fallback → Notify
 ```
 
-See [disk-utilization/README.md](disk-utilization/README.md) for JT IDs, AO workflow import, and `test_disk_use_percent` branch testing.
+See [disk-utilization/SETUP_GUIDE.md](disk-utilization/SETUP_GUIDE.md) for environment setup, JT IDs, AO workflow import, and `test_disk_use_percent` branch testing.
 
 ## AO vs AAP workflow comparison
 

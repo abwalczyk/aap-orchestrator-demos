@@ -41,6 +41,12 @@ flowchart LR
   G --> H
 ```
 
+## Docs
+
+| Document | Purpose |
+|---|---|
+| [SETUP_GUIDE.md](SETUP_GUIDE.md) | Step-by-step environment setup |
+
 Import [`ao/disk-demo-101.json`](ao/disk-demo-101.json) — this is the **working nostromo export** with all four branches and per-branch notify nodes. Activity UUIDs and `credential_id` are environment-specific; update `job_template_id` values if your Controller IDs differ.
 
 ### Nostromo job template map
@@ -65,31 +71,9 @@ Import [`ao/disk-demo-101.json`](ao/disk-demo-101.json) — this is the **workin
 
 Thresholds match `group_vars/all.yml` (`disk_warn_threshold: 80`, `disk_critical_threshold: 95`). Use `>=` / `<=` on the warn port so boundary values (80 and 95) route correctly.
 
-## What you need
-
-- AAP 2.7+ with automation orchestrator
-- One RHEL EC2 host AAP can SSH to
-- AWS credentials on the execution environment for the expand path (EBS volume modification)
-- Mattermost API token on the notify job template (`api_chat_token`)
-
-`ec2_instance_id` in inventory is optional — the expand playbook auto-discovers the instance via EC2 metadata or AWS API IP lookup.
-
 ## Setup
 
-**1. Register six job templates** from `playbooks/` (see table above).
-
-**2. Import** one workflow into automation orchestrator:
-
-| File | Switch routes on | Use when |
-|---|---|---|
-| [`ao/disk-demo-101.json`](ao/disk-demo-101.json) | `disk_use_percent` (numeric comparisons) | Demonstrating AO threshold expressions |
-| [`ao/disk-demo-tier-switch.json`](ao/disk-demo-tier-switch.json) | `disk_tier` (`ok` / `warn` / `critical`) | Reliable routing while troubleshooting numeric artifact typing |
-
-Both use the same check job and publish `disk_use_percent` plus `disk_tier`.
-
-**3. Adjust** `job_template_id` and `credential_id` on each node if your environment differs from nostromo.
-
-**4. Launch** from the AO UI.
+See [SETUP_GUIDE.md](SETUP_GUIDE.md) for infrastructure prerequisites, AAP job templates, Mattermost configuration, and AO workflow import.
 
 ## Testing branches without filling the disk
 
