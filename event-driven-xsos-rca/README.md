@@ -142,8 +142,7 @@ The rulebook uses **`run_job_template`**, not `run_module`, because AAP EDA only
 
 ```bash
 ansible-playbook -i inventory/hosts.yml playbooks/run_xsos_analysis.yml \
-  -e target_host=rca-target \
-  -e issue_id=manual-test-001 \
+  -e _host=rca-target \
   -e issue_summary="Manual xSOS smoke test"
 ```
 

@@ -1,24 +1,21 @@
 ---
-- name: Run xSOS analysis for unknown issue (EDA triggered)
-  hosts: "{{ target_host | default(ansible_eda.event.body.host | default(ansible_eda.event.payload.host | default('rca-target'))) }}"
+- name: Run xSOS analysis for unknown issue (AO / AAP triggered)
+  hosts: "{{ _host | default('all') }}"
   become: true
   gather_facts: true
-  vars:
-    resolved_issue_id: >-
-      {{
-        issue_id
-        | default(ansible_eda.event.body.issue_id | default(ansible_eda.event.payload.issue_id | default(ansible_eda.event.issue_id | default('unknown'))))
-      }}
-    resolved_issue_summary: >-
-      {{
-        issue_summary
-        | default(ansible_eda.event.body.summary | default(ansible_eda.event.payload.summary | default(ansible_eda.event.summary | default('Unknown issue'))))
-      }}
   tasks:
+    - name: Apply defaults
+      ansible.builtin.set_fact:
+        xsos_output_dir: "{{ xsos_output_dir | default('/var/tmp/xsos-rca') }}"
+        xsos_install: "{{ xsos_install | default(true) | bool }}"
+        xsos_sections: "{{ xsos_sections | default('--all') }}"
+        resolved_issue_summary: "{{ issue_summary | default(summary | default('Unknown issue')) }}"
+        report_stamp: "{{ ansible_date_time.epoch }}"
+      run_once: true
+
     - name: Show resolved event context
       ansible.builtin.debug:
         msg:
-          issue_id: "{{ resolved_issue_id }}"
           issue_summary: "{{ resolved_issue_summary }}"
           target: "{{ inventory_hostname }}"
       run_once: true
@@ -54,13 +51,12 @@
     - name: Save xSOS report on target host
       ansible.builtin.copy:
         content: |
-          issue_id: {{ resolved_issue_id }}
           issue_summary: {{ resolved_issue_summary }}
           analyzed_host: {{ inventory_hostname }}
           analyzed_at: {{ ansible_date_time.iso8601 }}
 
           {{ xsos_result.stdout }}
-        dest: "{{ xsos_output_dir }}/xsos-{{ resolved_issue_id }}-{{ inventory_hostname }}.txt"
+        dest: "{{ xsos_output_dir }}/xsos-{{ report_stamp }}-{{ inventory_hostname }}.txt"
         owner: root
         group: root
         mode: "0644"
@@ -68,10 +64,9 @@
     - name: Publish RCA artifacts for downstream automation orchestrator steps
       ansible.builtin.set_stats:
         data:
-          issue_id: "{{ resolved_issue_id }}"
           issue_summary: "{{ resolved_issue_summary }}"
           analyzed_host: "{{ inventory_hostname }}"
-          xsos_report_path: "{{ xsos_output_dir }}/xsos-{{ resolved_issue_id }}-{{ inventory_hostname }}.txt"
+          xsos_report_path: "{{ xsos_output_dir }}/xsos-{{ report_stamp }}-{{ inventory_hostname }}.txt"
           xsos_report_preview: "{{ xsos_result.stdout_lines[:40] | join('\n') }}"
         per_host: false
         aggregate: false
