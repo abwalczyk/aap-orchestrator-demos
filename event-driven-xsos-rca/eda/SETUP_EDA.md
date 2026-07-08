@@ -2,14 +2,25 @@
 
 Use this checklist to test the SQS → EDA rulebook → automation orchestrator webhook flow end to end.
 
+**Architecture and why we use `run_job_template`:** see [README — EDA actions on AAP](../README.md#eda-actions-on-aap).
+
 The rulebooks AAP syncs from the repo are:
 
 | Rulebook file | Action | Notes |
 |---|---|---|
 | `extensions/eda/rulebooks/event-driven-xsos-rca.yml` | `run_job_template` → Linux - Post AO Webhook | Works without activation inventory (uses Controller cred) |
-| `extensions/eda/rulebooks/event-driven-xsos-rca-run-module.yml` | `run_module` → `ansible.builtin.uri` | **Requires inventory on activation** (e.g. Demo Inventory) |
+| `extensions/eda/rulebooks/event-driven-xsos-rca-run-module.yml` | `run_module` → `ansible.builtin.uri` | **Does not work on AAP EDA activations** — see note below |
 
 Use only one activation per queue at a time to avoid duplicate processing.
+
+### Why `run_module` fails on AAP (not your fault)
+
+Anshul's pattern is valid for **standalone `ansible-rulebook` CLI** (`ansible-rulebook -i inventory.ini ...`).
+On **AAP-managed activations**, the worker starts without `--inventory` and the EDA UI has **no inventory field**.
+`run_module` then fails at startup with `needs inventory to be defined` (activation 27 shows **Number of rules: 0**).
+
+Red Hat AAP 2.6 documents `run_playbook` as **CLI-only**; `run_module` has the same inventory requirement.
+**Use `run_job_template`** on AAP (activation 26 pattern). This matches EDA product design: activations run automation through Controller (`run_job_template` / `run_workflow_template`), not standalone modules. Keep `run_module` rulebook for local CLI experiments only.
 
 ## 1. AWS queue (one-time)
 
@@ -87,16 +98,18 @@ Attach it to the rulebook activation.
 | Rulebook | Unknown issue xSOS RCA |
 | Inventory | *(optional)* |
 
-### Option B — `run_module` + `uri` (direct webhook POST)
+### Option B — `run_module` + `uri` (local CLI only, not AAP)
 
-| Field | Value |
-|---|---|
-| Rulebook | Unknown issue xSOS RCA (run_module) |
-| Inventory | **Demo Inventory** (required — activation fails without it) |
+This pattern **cannot run** as an AAP rulebook activation today — there is no inventory in the EDA UI
+and the worker does not receive `--inventory`. Use for local testing:
 
-Disable activation **26** (or whichever uses the same SQS queue) before enabling this one.
+```bash
+ansible-rulebook \
+  --inventory event-driven-xsos-rca/eda/inventory.ini \
+  --rulebook event-driven-xsos-rca/eda/rulebook-run-module.yml
+```
 
-### Shared activation settings
+### Shared activation settings (Option A)
 
 | Field | Value |
 |---|---|
