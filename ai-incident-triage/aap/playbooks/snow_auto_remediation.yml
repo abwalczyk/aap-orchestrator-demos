@@ -1,43 +1,54 @@
 ---
 - name: SNOW Auto Remediation
-  hosts: "{{ affected_system | default('localhost') }}"
-  gather_facts: false
+  hosts: all
+  gather_facts: true
   vars:
     incident_number: "{{ incident_number | default('UNKNOWN') }}"
-    category: "{{ category | default('unknown') }}"
-    recommended_action: "{{ recommended_action | default('') }}"
+    affected_system: "{{ affected_system | default('unknown', true) }}"
+    category: "{{ category | default('unknown', true) }}"
+    recommended_action: "{{ recommended_action | default('', true) }}"
 
   tasks:
     - name: Log remediation start
       ansible.builtin.debug:
         msg: >-
-          Starting remediation for incident {{ incident_number }}
+          Starting automated remediation for incident {{ incident_number }}
           on {{ inventory_hostname }} (category: {{ category }}).
           Action: {{ recommended_action }}
 
-    - name: Restart service (service incidents)
-      ansible.builtin.service:
-        name: "{{ service_name | default('nginx') }}"
-        state: restarted
-      when: category in ['software', 'network', 'inquiry']
-      ignore_errors: true
-
-    - name: Clear temp disk space (disk incidents)
-      ansible.builtin.shell: |
-        find /tmp -type f -atime +7 -delete
-        find /var/log -name "*.gz" -type f -delete
-        journalctl --vacuum-size=200M
-      when: category in ['hardware', 'inquiry']
-      ignore_errors: true
-
-    - name: Verify system is healthy
+    - name: Check system uptime and load
       ansible.builtin.command: uptime
       register: uptime_result
       changed_when: false
 
+    - name: Check disk usage
+      ansible.builtin.command: df -h /
+      register: disk_result
+      changed_when: false
+
+    - name: Check service status (software/network incidents)
+      ansible.builtin.service_facts:
+      when: category in ['software', 'network']
+
+    - name: Report service status
+      ansible.builtin.debug:
+        msg: >-
+          Service check on {{ inventory_hostname }}:
+          nginx={{ ansible_facts.services.get('nginx.service', {}).get('state', 'not found') }},
+          httpd={{ ansible_facts.services.get('httpd.service', {}).get('state', 'not found') }}
+      when: category in ['software', 'network']
+
+    - name: Report system health
+      ansible.builtin.debug:
+        msg: >-
+          System health check for {{ incident_number }} on {{ inventory_hostname }}.
+          OS: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}.
+          Uptime: {{ uptime_result.stdout }}.
+          Disk: {{ disk_result.stdout_lines[-1] }}.
+
     - name: Report remediation complete
       ansible.builtin.debug:
         msg: >-
-          Remediation complete for {{ incident_number }}.
-          System uptime: {{ uptime_result.stdout }}.
+          Remediation simulation complete for {{ incident_number }} on {{ inventory_hostname }}.
+          Recommended action was: {{ recommended_action }}.
           The incident is ready to be resolved in ServiceNow.
