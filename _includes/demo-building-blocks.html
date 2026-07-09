@@ -3,15 +3,64 @@
   Usage: {% include demo-building-blocks.html detail=detail %}
 {% endcomment %}
 {% assign detail = include.detail %}
+{% assign glossary = site.data.ao_glossary %}
 
 {% if detail.ao_building_blocks %}
 <section class="detail-section" id="ao-building-blocks">
   <h2>AO building blocks</h2>
-  <p class="detail-section__lede">Automation orchestrator node types this workflow uses on the canvas.</p>
+  <p class="detail-section__lede">
+    Automation orchestrator node types this workflow uses on the canvas.
+    <a href="{{ '/glossary/' | relative_url }}" class="ao-blocks__glossary-link">Browse all building blocks</a>
+  </p>
   <ul class="ao-blocks">
-    {% for block in detail.ao_building_blocks %}
-      <li><span class="ao-block">{{ block }}</span></li>
+    {% for block_key in detail.ao_building_blocks %}
+      {% assign term = glossary.terms[block_key] %}
+      {% if term %}
+        <li>
+          <button
+            type="button"
+            class="ao-block"
+            data-ao-term="{{ block_key }}"
+            aria-haspopup="dialog"
+            aria-controls="ao-term-dialog"
+          >
+            {{ term.label }}
+          </button>
+        </li>
+      {% else %}
+        <li><span class="ao-block ao-block--static">{{ block_key }}</span></li>
+      {% endif %}
     {% endfor %}
   </ul>
 </section>
+
+<dialog class="ao-term-dialog" id="ao-term-dialog" aria-labelledby="ao-term-dialog-title">
+  <div class="ao-term-dialog__card">
+    <button type="button" class="ao-term-dialog__close" data-ao-dialog-close aria-label="Close">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12l-4.89 4.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4z"/>
+      </svg>
+    </button>
+    <p class="ao-term-dialog__category" id="ao-term-dialog-category"></p>
+    <h3 class="ao-term-dialog__title" id="ao-term-dialog-title"></h3>
+    <p class="ao-term-dialog__definition" id="ao-term-dialog-definition"></p>
+    <a class="ao-term-dialog__more" id="ao-term-dialog-more" href="{{ '/glossary/' | relative_url }}">Learn more</a>
+  </div>
+</dialog>
+
+<script type="application/json" id="ao-glossary-page-terms">
+{
+  {% for block_key in detail.ao_building_blocks %}
+    {% assign term = glossary.terms[block_key] %}
+    {% if term %}
+      {% assign cat = glossary.categories[term.category] %}
+      "{{ block_key }}": {
+        "label": {{ term.label | jsonify }},
+        "category": {{ cat.label | default: term.category | jsonify }},
+        "short": {{ term.short | jsonify }}
+      }{% unless forloop.last %},{% endunless %}
+    {% endif %}
+  {% endfor %}
+}
+</script>
 {% endif %}

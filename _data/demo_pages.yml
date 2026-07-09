@@ -1,13 +1,13 @@
 cve-remediation:
   description: When a CVE alert arrives, an AI triage agent queries Red Hat Lightspeed for errata availability and reads the host environment from AAP inventory. Dev hosts with a fix available auto-patch through Gitea and AAP. Production hosts pause for human approval with a full audit trail. When no remediation exists, a second agent investigates CVSS, Advisor recommendations, and installed packages, then posts a structured report to Mattermost.
   ao_building_blocks:
-    - Manual trigger
-    - Agentic node
-    - Switch node
-    - Approval node
-    - AAP job template
-    - Script node
-    - MCP integration
+    - manual_trigger
+    - agentic
+    - switch
+    - approval
+    - aap_job_template
+    - script
+    - mcp_integration
   why_it_matters:
     - Lightspeed MCP supplies live vulnerability and remediation data, so routing is based on errata availability and host environment, not guesswork.
     - Production patches require explicit approval; dev patches run unattended. Governance matches how enterprises actually operate.
@@ -22,9 +22,9 @@ cve-remediation:
 disk-utilization:
   description: Servers run out of disk space at different urgency levels. At 72% you do nothing. At 85% you reclaim cache and old logs before it hurts. At 97% you add capacity. On EC2, expand the EBS volume, grow the partition, and extend XFS. Each path posts a tier-specific Mattermost message so the team knows what ran.
   ao_building_blocks:
-    - Manual trigger
-    - Switch node
-    - AAP job template
+    - manual_trigger
+    - switch
+    - aap_job_template
   why_it_matters:
     - One check playbook and one switch replace a nest of conditional jobs. Disk tier drives the right response automatically.
     - Remediation scales with severity: log and exit at low usage, cleanup at warning, expand capacity at critical instead of one-size-fits-all scripting.
@@ -33,11 +33,11 @@ disk-utilization:
 cert-lifecycle:
   description: Two certificates expire on production services at the same time. Splunk fires alerts to automation orchestrator. An AI agent analyzes each certificate, discovers available AAP job templates, and selects the correct renewal strategy (PEM for nginx, Java keystore for the API server) without hardcoded routing. An operator reviews the agent's analysis and confidence score, approves, and AAP renews and validates TLS automatically.
   ao_building_blocks:
-    - Webhook trigger
-    - Agentic node
-    - Approval node
-    - AAP job template
-    - Script node
+    - webhook_trigger
+    - agentic
+    - approval
+    - aap_job_template
+    - script
   why_it_matters:
     - One workflow intelligently handles multiple certificate types instead of maintaining separate automation for each.
     - AI provides deployment recommendations and confidence before changes are made, reducing operational risk.
@@ -221,10 +221,10 @@ ai-incident-triage:
 ticket-enrichment:
   description: ServiceNow posts an incident to a webhook. An AI triage agent analyzes the ticket via ServiceNow MCP and outputs which AAP job template to run. Auto Remediation launches that template dynamically — no switch node — then a second AI agent resolves the ticket in ServiceNow.
   ao_building_blocks:
-    - Webhook trigger
-    - Agentic node
-    - ServiceNow MCP
-    - AAP job template (dynamic expression)
+    - webhook_trigger
+    - agentic
+    - servicenow_mcp
+    - aap_job_template_dynamic
   why_it_matters:
     - Two agentic nodes bookend the flow; the middle step is remediation, not a static enrichment-only handoff.
     - Dynamic job template selection replaces switch branches or hardcoded template dropdowns — the triage agent picks the playbook at runtime.

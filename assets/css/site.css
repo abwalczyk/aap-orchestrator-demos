@@ -625,6 +625,227 @@ a {
   font-size: 13px;
   font-weight: 500;
   color: #c4b5fd;
+  font-family: inherit;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+button.ao-block:hover,
+button.ao-block:focus-visible {
+  background: #1f1528;
+  border-color: #5b3d7a;
+  box-shadow: 0 0 0 2px rgba(196, 181, 253, 0.2);
+  outline: none;
+}
+
+.ao-block--static {
+  cursor: default;
+}
+
+.ao-blocks__glossary-link {
+  color: #a78bfa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ao-blocks__glossary-link:hover {
+  color: #c4b5fd;
+}
+
+.ao-term-dialog {
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: min(440px, calc(100vw - 32px));
+  color: #e8e8e8;
+}
+
+.ao-term-dialog::backdrop {
+  background: rgba(5, 3, 8, 0.78);
+  backdrop-filter: blur(4px);
+}
+
+.ao-term-dialog__card {
+  position: relative;
+  padding: 24px 24px 20px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #1a1024 0%, #120a18 100%);
+  border: 1px solid #3a2a4a;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(196, 181, 253, 0.06) inset;
+}
+
+.ao-term-dialog__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+}
+
+.ao-term-dialog__close:hover,
+.ao-term-dialog__close:focus-visible {
+  background: rgba(196, 181, 253, 0.1);
+  color: #c4b5fd;
+  outline: none;
+}
+
+.ao-term-dialog__category {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a78bfa;
+}
+
+.ao-term-dialog__title {
+  margin: 0 0 12px;
+  padding-right: 28px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #f3e8ff;
+}
+
+.ao-term-dialog__definition {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #c4b5fd;
+}
+
+.ao-term-dialog__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #e9d5ff;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid #4c1d95;
+}
+
+.ao-term-dialog__more:hover {
+  background: rgba(139, 92, 246, 0.28);
+  color: #fff;
+}
+
+.glossary-hero {
+  margin-bottom: 32px;
+}
+
+.glossary-hero h1 {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.glossary-hero__lede {
+  margin: 0;
+  max-width: 640px;
+  font-size: 15px;
+  color: #888;
+  line-height: 1.6;
+}
+
+.glossary-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+.glossary-jump__link {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #c4b5fd;
+  background: #151018;
+  border: 1px solid #3a2a4a;
+}
+
+.glossary-jump__link:hover {
+  background: #1f1528;
+  border-color: #5b3d7a;
+}
+
+.glossary-section {
+  margin-bottom: 48px;
+}
+
+.glossary-section h2 {
+  margin-bottom: 16px;
+  font-size: 22px;
+  color: #f3e8ff;
+}
+
+.glossary-grid {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 720px) {
+  .glossary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.glossary-card {
+  padding: 20px;
+  border-radius: 12px;
+  background: #151018;
+  border: 1px solid #3a2a4a;
+  scroll-margin-top: 24px;
+}
+
+.glossary-card:target {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.35);
+}
+
+.glossary-card__title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #e9d5ff;
+}
+
+.glossary-card__short {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #c4b5fd;
+}
+
+.glossary-card__detail {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #888;
+}
+
+.glossary-card__source {
+  margin: 0;
+  font-size: 11px;
+  color: #555;
+}
+
+.glossary-card__source code {
+  font-size: 11px;
+  color: #666;
 }
 
 .detail-tags {

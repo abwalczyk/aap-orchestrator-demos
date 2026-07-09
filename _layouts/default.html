@@ -30,6 +30,7 @@
           <a href="{{ '/' | relative_url }}" class="nav-link{% if page.url == '/' %} active{% endif %}">All demos</a>
           <a href="{{ '/' | relative_url }}#active" class="nav-link" data-filter-nav="active">Active</a>
           <a href="{{ '/' | relative_url }}#coming-soon" class="nav-link" data-filter-nav="coming-soon">Coming soon</a>
+          <a href="{{ '/glossary/' | relative_url }}" class="nav-link{% if page.url contains '/glossary/' %} active{% endif %}">Building blocks</a>
         </nav>
       {% endif %}
 
@@ -68,6 +69,7 @@
 
   {% if page.demo_slug %}
   <script src="{{ '/assets/js/demo-toc.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/ao-glossary.js' | relative_url }}" defer></script>
   {% endif %}
 </body>
 </html>

@@ -1,0 +1,49 @@
+---
+layout: default
+title: AO building blocks glossary
+description: Definitions for Automation Orchestrator workflow canvas node types, triggers, and integrations
+ao_glossary_page: true
+---
+
+{% assign glossary = site.data.ao_glossary %}
+{% assign categories = glossary.categories %}
+
+<div class="glossary-hero">
+  <h1>AO building blocks</h1>
+  <p class="glossary-hero__lede">
+    Canonical definitions for Automation Orchestrator canvas node types — triggers, AI agents, control flow, AAP execution, and action steps.
+    Click any term on a demo page for the same definitions inline.
+  </p>
+</div>
+
+<nav class="glossary-jump" aria-label="Glossary categories">
+  {% for cat_id in glossary.category_order %}
+    {% assign cat = categories[cat_id] %}
+    <a href="#glossary-{{ cat_id }}" class="glossary-jump__link">{{ cat.label }}</a>
+  {% endfor %}
+</nav>
+
+{% for cat_id in glossary.category_order %}
+  {% assign cat = categories[cat_id] %}
+  <section class="glossary-section detail-section" id="glossary-{{ cat_id }}">
+    <h2>{{ cat.label }}</h2>
+    <div class="glossary-grid">
+      {% for term_pair in glossary.terms %}
+        {% assign term_key = term_pair[0] %}
+        {% assign term = term_pair[1] %}
+        {% if term.category == cat_id %}
+          <article class="glossary-card" id="{{ term_key }}">
+            <h3 class="glossary-card__title">{{ term.label }}</h3>
+            <p class="glossary-card__short">{{ term.short }}</p>
+            {% if term.detail and term.detail != term.short %}
+              <p class="glossary-card__detail">{{ term.detail }}</p>
+            {% endif %}
+            {% if term.nexus_source %}
+              <p class="glossary-card__source">Source: <code>{{ term.nexus_source }}</code></p>
+            {% endif %}
+          </article>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+{% endfor %}
