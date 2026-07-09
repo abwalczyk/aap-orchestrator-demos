@@ -65,18 +65,18 @@ terms:
     nexus_source: workflows/add-an-event-driven-ansible-trigger.md
 
   agentic:
-    label: Agentic node
+    label: AI node
     icon: assets/icons/task-agent.png
     category: ai
-    short: Adds LLM reasoning to a workflow. The agent receives a natural-language prompt, can call enabled tools, and returns structured output that downstream steps reference through expressions.
-    detail: Use agentic nodes for unstructured data — logs, tickets, alerts — where fixed rules fall short. The agent can summarize, classify, triage incidents, and recommend remediation actions. Pair with approval steps for human oversight.
+    short: Adds LLM reasoning to a workflow. The AI node receives a natural-language prompt, can call enabled tools, and returns structured output that downstream steps reference through expressions.
+    detail: Use AI nodes for unstructured data — logs, tickets, alerts — where fixed rules fall short. The node can summarize, classify, triage incidents, and recommend remediation actions. Pair with approval steps for human oversight.
     nexus_source: workflows/understand-workflow-ai-agents.md
 
   mcp_integration:
     label: MCP integration
     icon: assets/icons/glossary/mcp-integration.svg
     category: ai
-    short: Model Context Protocol server tools that agentic nodes can call to read or change external systems — inventory, ITSM, vulnerability data, and more.
+    short: Model Context Protocol server tools that AI nodes can call to read or change external systems — inventory, ITSM, vulnerability data, and more.
     detail: Configure MCP integrations under Integrations so AI agents access live platform data instead of hallucinating context. Agents select which tools to use based on the prompt and tool access policy (all, some, or none).
     nexus_source: workflows/workflow-planning-and-prereqs.md
 
@@ -84,7 +84,7 @@ terms:
     label: ServiceNow MCP
     icon: assets/icons/glossary/servicenow-mcp.svg
     category: ai
-    short: An MCP integration scoped to ServiceNow — lets agentic nodes query incidents, update records, and close tickets without custom HTTP glue code.
+    short: An MCP integration scoped to ServiceNow — lets AI nodes query incidents, update records, and close tickets without custom HTTP glue code.
     detail: ServiceNow MCP keeps ITSM reads and writes native inside the workflow. Common patterns include triage agents that enrich incidents and resolution agents that update state after remediation completes.
     nexus_source: workflows/add-action-steps.md
 
@@ -132,7 +132,7 @@ terms:
     label: AAP job template (dynamic expression)
     icon: assets/icons/launch-aap-job-template.png
     category: aap
-    short: Launches an AAP job template selected at runtime via expressions — for example, dragging job_template_name from an upstream agentic node instead of picking a fixed template in the dropdown.
+    short: Launches an AAP job template selected at runtime via expressions — for example, dragging job_template_name from an upstream AI node instead of picking a fixed template in the dropdown.
     detail: Toggle Use expressions on the AAP job step to replace organization and job template dropdowns with expression fields. Ideal when AI triage picks the remediation playbook based on incident context.
     nexus_source: workflows/add-aap-job-execution-step.md
 

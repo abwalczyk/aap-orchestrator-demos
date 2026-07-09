@@ -226,7 +226,7 @@ ticket-enrichment:
     - servicenow_mcp
     - aap_job_template_dynamic
   why_it_matters:
-    - Two agentic nodes bookend the flow; the middle step is remediation, not a static enrichment-only handoff.
+    - Two AI nodes bookend the flow; the middle step is remediation, not a static enrichment-only handoff.
     - Dynamic job template selection replaces switch branches or hardcoded template dropdowns — the triage agent picks the playbook at runtime.
     - ServiceNow MCP on both agents keeps ITSM reads and writes native; webhook ingress works with any poster that can hit /incident-alert.
   bullets:
