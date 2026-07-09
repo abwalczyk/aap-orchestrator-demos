@@ -63,20 +63,47 @@
     }
   }
 
+  function applyBlockFilter(block) {
+    activeBlock = block;
+    setActiveBlockPill(activeBlock);
+    applyFilters();
+  }
+
+  function applyStatusFilter(status) {
+    activeStatus = status;
+    setActiveStatusPill(activeStatus);
+    applyFilters();
+  }
+
+  function readFiltersFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var blockParam = params.get('block');
+    if (blockParam) {
+      applyBlockFilter(blockParam);
+      return;
+    }
+
+    var hash = window.location.hash.replace('#', '');
+    if (hash === 'active' || hash === 'coming-soon') {
+      applyStatusFilter(hash);
+      return;
+    }
+
+    if (hash.indexOf('block-') === 0) {
+      applyBlockFilter(hash.slice(6));
+    }
+  }
+
   statusPills.forEach(function (pill) {
     pill.addEventListener('click', function () {
-      activeStatus = pill.dataset.filterStatus;
-      setActiveStatusPill(activeStatus);
-      applyFilters();
+      applyStatusFilter(pill.dataset.filterStatus);
     });
   });
 
   blockPills.forEach(function (pill) {
     pill.addEventListener('click', function () {
       const block = pill.dataset.filterBlock;
-      activeBlock = activeBlock === block ? null : block;
-      setActiveBlockPill(activeBlock);
-      applyFilters();
+      applyBlockFilter(activeBlock === block ? null : block);
     });
   });
 
@@ -89,19 +116,14 @@
       const filter = link.dataset.filterNav;
       if (filter && statusPills.length) {
         e.preventDefault();
-        activeStatus = filter;
-        setActiveStatusPill(activeStatus);
-        applyFilters();
+        activeBlock = null;
+        setActiveBlockPill(null);
+        applyStatusFilter(filter);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
   });
 
-  var hash = window.location.hash.replace('#', '');
-  if (hash && ['active', 'coming-soon'].indexOf(hash) >= 0) {
-    activeStatus = hash;
-    setActiveStatusPill(activeStatus);
-  }
-
+  readFiltersFromUrl();
   applyFilters();
 })();

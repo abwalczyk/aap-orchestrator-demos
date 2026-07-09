@@ -52,7 +52,7 @@ description: Browse automation orchestrator demo workflows and use cases
       {% if block_count > 0 %}
         {% assign term = glossary.terms[block_key] %}
         <button type="button" class="filter-pill filter-pill--block" data-filter-block="{{ block_key }}">
-          {{ term.label | default: block_key }} <span class="count">{{ block_count }}</span>
+          {{ term.label | default: block_key }}
         </button>
       {% endif %}
     {% endfor %}

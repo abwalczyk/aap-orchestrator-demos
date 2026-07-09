@@ -31,6 +31,13 @@ ao_glossary_page: true
         {% assign term_key = term_pair[0] %}
         {% assign term = term_pair[1] %}
         {% if term.category == cat_id %}
+          {% assign demo_count = 0 %}
+          {% for demo in site.data.demos %}
+            {% assign demo_detail = site.data.demo_pages[demo.slug] %}
+            {% if demo_detail.ao_building_blocks and demo_detail.ao_building_blocks contains term_key %}
+              {% assign demo_count = demo_count | plus: 1 %}
+            {% endif %}
+          {% endfor %}
           <article class="glossary-card" id="{{ term_key }}">
             {% if term.icon %}
               <div class="glossary-card__icon-wrap">
@@ -45,10 +52,19 @@ ao_glossary_page: true
                 >
               </div>
             {% endif %}
-            <h3 class="glossary-card__title">{{ term.label }}</h3>
+            {% if demo_count > 0 %}
+              <h3 class="glossary-card__title">
+                <a href="{{ '/' | relative_url }}#block-{{ term_key }}" class="glossary-card__title-link">{{ term.label }}</a>
+              </h3>
+            {% else %}
+              <h3 class="glossary-card__title">{{ term.label }}</h3>
+            {% endif %}
             <p class="glossary-card__short">{{ term.short }}</p>
             {% if term.detail and term.detail != term.short %}
               <p class="glossary-card__detail">{{ term.detail }}</p>
+            {% endif %}
+            {% if demo_count > 0 %}
+              <a href="{{ '/' | relative_url }}#block-{{ term_key }}" class="glossary-card__demos-link">View demos using this block</a>
             {% endif %}
           </article>
         {% endif %}
