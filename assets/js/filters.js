@@ -1,5 +1,6 @@
 (function () {
-  const pills = document.querySelectorAll('.filter-pill');
+  const statusPills = document.querySelectorAll('[data-filter-status]');
+  const blockPills = document.querySelectorAll('[data-filter-block]');
   const cards = document.querySelectorAll('.demo-card');
   const navLinks = document.querySelectorAll('[data-filter-nav]');
   const searchInput = document.getElementById('demo-search');
@@ -7,33 +8,18 @@
 
   if (!cards.length) return;
 
-  let activeFilter = 'all';
+  let activeStatus = 'all';
+  let activeBlock = null;
 
-  function cardMatchesFilter(card, filter) {
-    const status = card.dataset.status;
-    const category = card.dataset.category;
-    const tags = (card.dataset.tags || '').split(',');
-    const usesAi = card.dataset.usesAi === 'true';
+  function cardMatchesStatus(card, status) {
+    if (status === 'all') return true;
+    return card.dataset.status === status;
+  }
 
-    switch (filter) {
-      case 'all':
-        return true;
-      case 'active':
-        return status === 'active';
-      case 'coming-soon':
-        return status === 'coming-soon';
-      case 'cert-rotation':
-      case 'disk-utilization':
-      case 'incident-remediation':
-        return category === filter;
-      default:
-        if (tags.indexOf('AI Agent') >= 0 && filter === 'ai-agent') return true;
-        if (tags.indexOf('Switch') >= 0 && filter === 'switch') return true;
-        return tags.some(function (t) {
-          const normalized = t.trim().toLowerCase().replace(/\s+/g, '-');
-          return normalized === filter || t.trim().toLowerCase() === filter.replace(/-/g, ' ');
-        });
-    }
+  function cardMatchesBlock(card, block) {
+    if (!block) return true;
+    const blocks = (card.dataset.buildingBlocks || '').split(',').filter(Boolean);
+    return blocks.indexOf(block) >= 0;
   }
 
   function cardMatchesSearch(card, query) {
@@ -42,12 +28,27 @@
     return haystack.indexOf(query) >= 0;
   }
 
+  function setActiveStatusPill(status) {
+    statusPills.forEach(function (pill) {
+      pill.classList.toggle('active', pill.dataset.filterStatus === status);
+    });
+  }
+
+  function setActiveBlockPill(block) {
+    blockPills.forEach(function (pill) {
+      pill.classList.toggle('active', block && pill.dataset.filterBlock === block);
+    });
+  }
+
   function applyFilters() {
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
     let visibleCount = 0;
 
     cards.forEach(function (card) {
-      const show = cardMatchesFilter(card, activeFilter) && cardMatchesSearch(card, query);
+      const show =
+        cardMatchesStatus(card, activeStatus) &&
+        cardMatchesBlock(card, activeBlock) &&
+        cardMatchesSearch(card, query);
       card.classList.toggle('hidden', !show);
       if (show) visibleCount += 1;
     });
@@ -62,17 +63,22 @@
     }
   }
 
-  if (pills.length) {
-    pills.forEach(function (pill) {
-      pill.addEventListener('click', function () {
-        activeFilter = pill.dataset.filter;
-        pills.forEach(function (p) {
-          p.classList.toggle('active', p.dataset.filter === activeFilter);
-        });
-        applyFilters();
-      });
+  statusPills.forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      activeStatus = pill.dataset.filterStatus;
+      setActiveStatusPill(activeStatus);
+      applyFilters();
     });
-  }
+  });
+
+  blockPills.forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      const block = pill.dataset.filterBlock;
+      activeBlock = activeBlock === block ? null : block;
+      setActiveBlockPill(activeBlock);
+      applyFilters();
+    });
+  });
 
   if (searchInput) {
     searchInput.addEventListener('input', applyFilters);
@@ -81,12 +87,10 @@
   navLinks.forEach(function (link) {
     link.addEventListener('click', function (e) {
       const filter = link.dataset.filterNav;
-      if (filter && pills.length) {
+      if (filter && statusPills.length) {
         e.preventDefault();
-        activeFilter = filter;
-        pills.forEach(function (p) {
-          p.classList.toggle('active', p.dataset.filter === activeFilter);
-        });
+        activeStatus = filter;
+        setActiveStatusPill(activeStatus);
         applyFilters();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -94,11 +98,9 @@
   });
 
   var hash = window.location.hash.replace('#', '');
-  if (hash && ['active', 'coming-soon', 'cert-rotation', 'disk-utilization', 'incident-remediation'].indexOf(hash) >= 0) {
-    activeFilter = hash;
-    pills.forEach(function (p) {
-      p.classList.toggle('active', p.dataset.filter === activeFilter);
-    });
+  if (hash && ['active', 'coming-soon'].indexOf(hash) >= 0) {
+    activeStatus = hash;
+    setActiveStatusPill(activeStatus);
   }
 
   applyFilters();

@@ -26,6 +26,19 @@ category_order:
   - aap
   - actions
 
+# Building blocks shown on the marketplace filter row (order preserved; pills hidden when no demo uses them).
+marketplace_filters:
+  - agentic
+  - switch
+  - approval
+  - webhook_trigger
+  - manual_trigger
+  - aap_job_template
+  - aap_job_template_dynamic
+  - script
+  - mcp_integration
+  - servicenow_mcp
+
 terms:
   manual_trigger:
     label: Manual trigger

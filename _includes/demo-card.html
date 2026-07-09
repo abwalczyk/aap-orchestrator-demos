@@ -5,14 +5,27 @@
 {% else %}
   {% assign card_href = "#" %}
 {% endif %}
+{% assign card_detail = site.data.demo_pages[demo.slug] %}
+{% assign card_blocks = card_detail.ao_building_blocks | join: ',' %}
+{% assign card_block_labels = "" %}
+{% if card_detail.ao_building_blocks %}
+  {% for block_key in card_detail.ao_building_blocks %}
+    {% assign block_term = site.data.ao_glossary.terms[block_key] %}
+    {% if block_term %}
+      {% if card_block_labels != "" %}
+        {% assign card_block_labels = card_block_labels | append: ' ' %}
+      {% endif %}
+      {% assign card_block_labels = card_block_labels | append: block_term.label %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
 
 <article
   class="demo-card{% if featured %} demo-card--featured{% endif %}{% if demo.status != 'active' %} demo-card--soon{% endif %}"
   data-status="{{ demo.status }}"
   data-category="{{ demo.category }}"
-  data-tags="{{ demo.tags | join: ',' }}"
-  data-uses-ai="{{ demo.uses_ai }}"
-  data-search="{{ demo.title | downcase }} {{ demo.subtitle | downcase }} {{ demo.blurb | downcase }} {{ demo.category | replace: '-', ' ' | downcase }} {{ demo.tags | join: ' ' | downcase }}"
+  data-building-blocks="{{ card_blocks }}"
+  data-search="{{ demo.title | downcase }} {{ demo.subtitle | downcase }} {{ demo.blurb | downcase }} {{ demo.category | replace: '-', ' ' | downcase }} {{ card_block_labels | downcase }}"
 >
   <a href="{{ card_href }}" class="demo-card__link">
     <div class="demo-card__thumb{% if demo.thumbnail.video %} demo-card__thumb--video{% endif %}" style="background: {{ demo.thumbnail.gradient }};">
@@ -44,11 +57,20 @@
       </div>
       <h3 class="demo-card__title">{{ demo.title }}</h3>
       <p class="demo-card__blurb">{{ demo.blurb }}</p>
-      <div class="demo-card__tags">
-        {% for tag in demo.tags %}
-          <span class="tag" data-tag="{{ tag }}">{{ tag }}</span>
-        {% endfor %}
-      </div>
+      {% if card_detail.ao_building_blocks %}
+        <div class="demo-card__blocks">
+          {% for block_key in card_detail.ao_building_blocks %}
+            {% assign block_term = site.data.ao_glossary.terms[block_key] %}
+            <span class="demo-card__block">{{ block_term.label | default: block_key }}</span>
+          {% endfor %}
+        </div>
+      {% elsif demo.tags %}
+        <div class="demo-card__tags">
+          {% for tag in demo.tags %}
+            <span class="tag" data-tag="{{ tag }}">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
       <div class="demo-card__stats">
         {% if demo.stats.workflows > 0 %}
           <span>{{ demo.stats.workflows }} workflow{% if demo.stats.workflows != 1 %}s{% endif %}</span>

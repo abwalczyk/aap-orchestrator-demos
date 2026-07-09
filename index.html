@@ -26,19 +26,37 @@ description: Browse automation orchestrator demo workflows and use cases
       type="search"
       id="demo-search"
       class="search-bar__input"
-      placeholder="Search demos by name, tag, or category…"
+      placeholder="Search demos by name, category, or building block…"
       aria-label="Search demos"
       autocomplete="off"
     >
   </div>
 </div>
 
-<div class="filters" role="tablist" aria-label="Filter demos">
-  <button type="button" class="filter-pill active" data-filter="all">All <span class="count">{{ all_demos.size }}</span></button>
-  <button type="button" class="filter-pill" data-filter="active">Active <span class="count">{{ active_count }}</span></button>
-  <button type="button" class="filter-pill" data-filter="switch">Switch</button>
-  <button type="button" class="filter-pill" data-filter="ai-agent">AI Agent</button>
-  <button type="button" class="filter-pill" data-filter="coming-soon">Coming soon <span class="count">{{ soon_count }}</span></button>
+<div class="filters">
+  <div class="filters__row filters__row--status" role="tablist" aria-label="Filter by status">
+    <button type="button" class="filter-pill filter-pill--status active" data-filter-status="all">All <span class="count">{{ all_demos.size }}</span></button>
+    <button type="button" class="filter-pill filter-pill--status" data-filter-status="active">Active <span class="count">{{ active_count }}</span></button>
+    <button type="button" class="filter-pill filter-pill--status" data-filter-status="coming-soon">Coming soon <span class="count">{{ soon_count }}</span></button>
+  </div>
+  {% assign glossary = site.data.ao_glossary %}
+  <div class="filters__row filters__row--blocks" role="tablist" aria-label="Filter by building block">
+    {% for block_key in glossary.marketplace_filters %}
+      {% assign block_count = 0 %}
+      {% for demo in all_demos %}
+        {% assign detail = site.data.demo_pages[demo.slug] %}
+        {% if detail.ao_building_blocks and detail.ao_building_blocks contains block_key %}
+          {% assign block_count = block_count | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+      {% if block_count > 0 %}
+        {% assign term = glossary.terms[block_key] %}
+        <button type="button" class="filter-pill filter-pill--block" data-filter-block="{{ block_key }}">
+          {{ term.label | default: block_key }} <span class="count">{{ block_count }}</span>
+        </button>
+      {% endif %}
+    {% endfor %}
+  </div>
 </div>
 
 <p class="filter-empty hidden" id="filter-empty" role="status">No demos match your search.</p>
