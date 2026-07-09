@@ -121,6 +121,39 @@
       classDef noBorder fill:transparent,stroke:transparent
       class A,B,C,D,E,F noBorder
 
+- slug: ticket-enrichment
+  title: Ticket Enrichment
+  subtitle: AI triage with dynamic AAP remediation
+  category: incident-remediation
+  status: coming-soon
+  featured: false
+  uses_ai: true
+  tags:
+    - AI Agent
+    - MCP
+    - Webhook
+  thumbnail:
+    gradient: "linear-gradient(135deg, #1a2a3a 0%, #0d1824 50%, #2a1a3a 100%)"
+    icon: "🎫"
+  blurb: ServiceNow webhook triggers AI triage, a dynamic AAP job runs the agent-selected template, then AI resolves the ticket — no switch required.
+  stats:
+    workflows: 1
+    playbooks: 0
+    setup_minutes: 30
+  url: /demos/ticket-enrichment/
+  github_path: ticket-enrichment/
+  github_doc: ticket-enrichment/README.md
+  setup_guide: ticket-enrichment/REQUIREMENTS.md
+  arcade_embed: https://interact.redhat.com/share/j5xLvTSv2GAkw6szxron?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true
+  arcade_title: Automation Orchestrator — Ticket Enrichment
+  workflow_mermaid: |
+    flowchart LR
+      A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Incident Alert Trigger", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/task-agent.png", label: "AI Triage Agent", pos: "b", h: 96, constraint: "on" }
+      B --> C@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Auto Remediation", pos: "b", h: 96, constraint: "on" }
+      C --> D@{ img: "__ASSET__/assets/icons/task-agent.png", label: "Resolve Incident", pos: "b", h: 96, constraint: "on" }
+      classDef noBorder fill:transparent,stroke:transparent
+      class A,B,C,D noBorder
+
 - slug: risk-based-routing
   title: Risk-Based Routing
   subtitle: Risk-tier renewal decisions
@@ -484,36 +517,3 @@
       D --> F[Validate recovery]
       E --> F
       F --> G[Notify operators]
-
-- slug: ticket-enrichment
-  title: Ticket Enrichment
-  subtitle: AI triage with dynamic AAP remediation
-  category: incident-remediation
-  status: coming-soon
-  featured: false
-  uses_ai: true
-  tags:
-    - AI Agent
-    - MCP
-    - Webhook
-  thumbnail:
-    gradient: "linear-gradient(135deg, #1a2a3a 0%, #0d1824 50%, #2a1a3a 100%)"
-    icon: "🎫"
-  blurb: ServiceNow webhook triggers AI triage, a dynamic AAP job runs the agent-selected template, then AI resolves the ticket — no switch required.
-  stats:
-    workflows: 1
-    playbooks: 0
-    setup_minutes: 30
-  url: /demos/ticket-enrichment/
-  github_path: ticket-enrichment/
-  github_doc: ticket-enrichment/README.md
-  setup_guide: ticket-enrichment/REQUIREMENTS.md
-  arcade_embed: https://interact.redhat.com/share/j5xLvTSv2GAkw6szxron?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true
-  arcade_title: Automation Orchestrator — Ticket Enrichment
-  workflow_mermaid: |
-    flowchart LR
-      A@{ img: "__ASSET__/assets/icons/manual-trigger.png", label: "Incident Alert Trigger", pos: "b", h: 96, constraint: "on" } --> B@{ img: "__ASSET__/assets/icons/task-agent.png", label: "AI Triage Agent", pos: "b", h: 96, constraint: "on" }
-      B --> C@{ img: "__ASSET__/assets/icons/launch-aap-job-template.png", label: "Auto Remediation", pos: "b", h: 96, constraint: "on" }
-      C --> D@{ img: "__ASSET__/assets/icons/task-agent.png", label: "Resolve Incident", pos: "b", h: 96, constraint: "on" }
-      classDef noBorder fill:transparent,stroke:transparent
-      class A,B,C,D noBorder

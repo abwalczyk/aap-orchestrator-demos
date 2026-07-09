@@ -8,7 +8,10 @@
 {% if detail.ao_building_blocks %}
 <section class="detail-section" id="ao-building-blocks">
   <h2>AO building blocks</h2>
-  <p class="detail-section__lede">Automation orchestrator node types this workflow uses on the canvas.</p>
+  <p class="detail-section__lede">
+    Automation orchestrator node types this workflow uses on the canvas.
+    <a href="{{ '/glossary/' | relative_url }}" class="ao-blocks__glossary-link">See all building blocks</a>
+  </p>
   <ul class="ao-blocks">
     {% for block_key in detail.ao_building_blocks %}
       {% assign term = glossary.terms[block_key] %}
@@ -26,7 +29,6 @@
             <p class="ao-block-popover__category">{{ cat.label }}</p>
             <p class="ao-block-popover__title">{{ term.label }}</p>
             <p class="ao-block-popover__definition">{{ term.short }}</p>
-            <a href="{{ '/glossary/' | relative_url }}#{{ block_key }}" class="ao-block-popover__more">Learn more</a>
           </div>
         </li>
       {% else %}

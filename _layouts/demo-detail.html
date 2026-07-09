@@ -20,11 +20,6 @@ mermaid: true
           <p class="detail-one-liner"><em>{{ detail.one_liner }}</em></p>
         {% endif %}
       </div>
-      <div class="detail-tags">
-        {% for tag in demo.tags %}
-          <span class="tag">{{ tag }}</span>
-        {% endfor %}
-      </div>
     </div>
     <div class="detail-hero__actions">
       {% include demo-cta.html demo=demo %}

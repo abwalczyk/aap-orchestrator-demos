@@ -114,7 +114,9 @@ a {
 }
 
 .sidebar-nav--reference {
-  margin-top: 8px;
+  margin-top: auto;
+  margin-bottom: 28px;
+  padding-top: 16px;
   flex: none;
 }
 
@@ -125,7 +127,7 @@ a {
 .demo-toc {
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .demo-toc__link {
@@ -146,8 +148,9 @@ a {
 }
 
 .sidebar-footer {
-  margin-top: auto;
-  padding-top: 20px;
+  margin-top: 0;
+  padding-top: 0;
+  flex-shrink: 0;
 }
 
 .sidebar-footer__brand {
@@ -652,6 +655,16 @@ button.ao-block:focus-visible {
   cursor: default;
 }
 
+.ao-blocks__glossary-link {
+  color: #a78bfa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ao-blocks__glossary-link:hover {
+  color: #c4b5fd;
+}
+
 .ao-block-popover {
   position: absolute;
   bottom: calc(100% + 8px);
@@ -696,27 +709,10 @@ button.ao-block:focus-visible {
 }
 
 .ao-block-popover__definition {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 12px;
   line-height: 1.5;
   color: #c4b5fd;
-}
-
-.ao-block-popover__more {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 500;
-  color: #e9d5ff;
-  text-decoration: none;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: rgba(139, 92, 246, 0.18);
-  border: 1px solid #4c1d95;
-}
-
-.ao-block-popover__more:hover {
-  background: rgba(139, 92, 246, 0.28);
-  color: #fff;
 }
 
 #ao-building-blocks {
