@@ -23,7 +23,6 @@
 
       {% if page.demo_slug %}
         <a href="{{ '/' | relative_url }}" class="nav-link sidebar-back">← All demos</a>
-        {% include demo-sidebar-toc.html %}
       {% else %}
         <nav class="sidebar-nav">
           <p class="nav-heading">Explore</p>
@@ -34,6 +33,10 @@
       {% endif %}
 
       {% include sidebar-reference-nav.html %}
+
+      {% if page.demo_slug %}
+        {% include demo-sidebar-toc.html %}
+      {% endif %}
 
       {% include sidebar-footer.html %}
     </aside>
