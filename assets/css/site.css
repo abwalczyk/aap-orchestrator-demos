@@ -113,6 +113,11 @@ a {
   flex: 1;
 }
 
+.sidebar-nav--reference {
+  margin-top: 8px;
+  flex: none;
+}
+
 .sidebar-back {
   margin-bottom: 8px;
 }
@@ -649,7 +654,7 @@ button.ao-block:focus-visible {
 
 .ao-block-popover {
   position: absolute;
-  top: calc(100% + 8px);
+  bottom: calc(100% + 8px);
   left: 0;
   width: max-content;
   max-width: min(300px, calc(100vw - 48px));
@@ -712,14 +717,6 @@ button.ao-block:focus-visible {
 .ao-block-popover__more:hover {
   background: rgba(139, 92, 246, 0.28);
   color: #fff;
-}
-
-@media (min-width: 720px) {
-  .ao-block-popover {
-    top: 50%;
-    left: calc(100% + 10px);
-    transform: translateY(-50%);
-  }
 }
 
 #ao-building-blocks {
