@@ -46,6 +46,7 @@ aap-orchestrator-demos/
 ├── disk-utilization/        # Active
 ├── event-driven-xsos-rca/   # In progress — category: incident-remediation
 ├── ai-incident-triage/      # Coming soon
+├── ticket-enrichment/       # Coming soon — Arcade ready, assets pending upload
 ├── multi-service-correlation/
 ├── service-health/
 ├── patch-management/

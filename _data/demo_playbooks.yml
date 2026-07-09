@@ -112,5 +112,8 @@ event-driven-xsos-rca:
 ai-incident-triage:
   status: under-development
 
+ticket-enrichment:
+  status: under-development
+
 multi-service-correlation:
   status: under-development

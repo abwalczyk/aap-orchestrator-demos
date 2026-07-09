@@ -218,6 +218,28 @@ ai-incident-triage:
     - Dynamic playbook selection at runtime
     - Post-remediation validation and operator notification
 
+ticket-enrichment:
+  description: ServiceNow posts an incident to a webhook. An AI triage agent analyzes the ticket via ServiceNow MCP and outputs which AAP job template to run. Auto Remediation launches that template dynamically — no switch node — then a second AI agent resolves the ticket in ServiceNow.
+  ao_building_blocks:
+    - Webhook trigger
+    - Agentic node
+    - ServiceNow MCP
+    - AAP job template (dynamic expression)
+  why_it_matters:
+    - Two agentic nodes bookend the flow; the middle step is remediation, not a static enrichment-only handoff.
+    - Dynamic job template selection replaces switch branches or hardcoded template dropdowns — the triage agent picks the playbook at runtime.
+    - ServiceNow MCP on both agents keeps ITSM reads and writes native; webhook ingress works with any poster that can hit /incident-alert.
+  bullets:
+    - Webhook trigger — Incident Alert (`/incident-alert`)
+    - AI Triage Agent (default Claude Sonnet) → outputs `job_template_name`
+    - Auto Remediation — `${triage_agent.result.content.job_template_name}`
+    - Resolve Incident agent — close ticket via ServiceNow MCP
+  demo_ideas:
+    - Show the Auto Remediation node with Use expressions and the triage agent variable reference
+    - Fire a test webhook payload and walk job template selection changing per incident type
+    - Compare to AI Incident Triage switch demo — same ITSM, different routing style
+    - Walk through the Interact Arcade end to end
+
 multi-service-correlation:
   description: Multiple correlated alerts arrive across services. The workflow correlates them, identifies root cause when possible, and routes to targeted remediation or AI-assisted triage when not.
   why_it_matters:
