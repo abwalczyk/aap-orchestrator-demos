@@ -12,7 +12,6 @@ ao_glossary_page: true
   <h1>AO building blocks</h1>
   <p class="glossary-hero__lede">
     Canonical definitions for Automation Orchestrator canvas node types — triggers, AI agents, control flow, AAP execution, and action steps.
-    Click any term on a demo page for the same definitions inline.
   </p>
 </div>
 
@@ -37,9 +36,6 @@ ao_glossary_page: true
             <p class="glossary-card__short">{{ term.short }}</p>
             {% if term.detail and term.detail != term.short %}
               <p class="glossary-card__detail">{{ term.detail }}</p>
-            {% endif %}
-            {% if term.nexus_source %}
-              <p class="glossary-card__source">Source: <code>{{ term.nexus_source }}</code></p>
             {% endif %}
           </article>
         {% endif %}
