@@ -786,11 +786,33 @@ button.ao-block:focus-visible {
   background: #151018;
   border: 1px solid #3a2a4a;
   scroll-margin-top: 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 .glossary-card:target {
   border-color: #7c3aed;
   box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.35);
+}
+
+.glossary-card__icon-wrap {
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+  min-height: 56px;
+}
+
+.glossary-card__icon {
+  display: block;
+  height: 56px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.glossary-card__icon--placeholder {
+  opacity: 0.92;
 }
 
 .glossary-card__title {

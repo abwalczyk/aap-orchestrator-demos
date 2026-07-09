@@ -1,5 +1,6 @@
 # AO canvas building blocks — definitions sourced from nexus-docs (Automation Orchestrator).
 # Update short/detail text when upstream workflow docs change.
+# icon: canvas PNGs from workflow diagrams; SVG placeholders in assets/icons/glossary/ until official icons exist.
 
 categories:
   triggers:
@@ -28,6 +29,7 @@ category_order:
 terms:
   manual_trigger:
     label: Manual trigger
+    icon: assets/icons/manual-trigger.png
     category: triggers
     short: Starts a workflow when a user clicks Run in the UI or calls the workflow execution API. No extra configuration is required; optional input schema lets you pass parameters at launch.
     detail: A manual trigger is the simplest entry point for workflows you run on demand — demos, break-glass remediation, or operator-initiated changes. Runs appear in history with the triggering user as the source.
@@ -35,6 +37,7 @@ terms:
 
   webhook_trigger:
     label: Webhook trigger
+    icon: assets/icons/glossary/webhook-trigger.svg
     category: triggers
     short: Starts a workflow when an external system sends an authenticated HTTP POST to a generated endpoint URL. The request body becomes trigger input for downstream steps.
     detail: Use webhook triggers to integrate CI/CD pipelines, monitoring tools, Splunk alerts, or any system that can POST JSON to Automation Orchestrator. Each workflow gets a unique URL path.
@@ -42,6 +45,7 @@ terms:
 
   eda_trigger:
     label: Event-Driven Ansible trigger
+    icon: assets/icons/glossary/eda-trigger.svg
     category: triggers
     short: Starts a workflow when Event-Driven Ansible routes a matching event to an Automation Orchestrator webhook endpoint configured on the rulebook activation.
     detail: EDA detects infrastructure events (logs, queues, webhooks) and forwards them to AO for analysis, AI triage, and remediation. The trigger uses the same webhook mechanism as external POST callers.
@@ -49,6 +53,7 @@ terms:
 
   agentic:
     label: Agentic node
+    icon: assets/icons/task-agent.png
     category: ai
     short: Adds LLM reasoning to a workflow. The agent receives a natural-language prompt, can call enabled tools, and returns structured output that downstream steps reference through expressions.
     detail: Use agentic nodes for unstructured data — logs, tickets, alerts — where fixed rules fall short. The agent can summarize, classify, triage incidents, and recommend remediation actions. Pair with approval steps for human oversight.
@@ -56,6 +61,7 @@ terms:
 
   mcp_integration:
     label: MCP integration
+    icon: assets/icons/glossary/mcp-integration.svg
     category: ai
     short: Model Context Protocol server tools that agentic nodes can call to read or change external systems — inventory, ITSM, vulnerability data, and more.
     detail: Configure MCP integrations under Integrations so AI agents access live platform data instead of hallucinating context. Agents select which tools to use based on the prompt and tool access policy (all, some, or none).
@@ -63,6 +69,7 @@ terms:
 
   servicenow_mcp:
     label: ServiceNow MCP
+    icon: assets/icons/glossary/servicenow-mcp.svg
     category: ai
     short: An MCP integration scoped to ServiceNow — lets agentic nodes query incidents, update records, and close tickets without custom HTTP glue code.
     detail: ServiceNow MCP keeps ITSM reads and writes native inside the workflow. Common patterns include triage agents that enrich incidents and resolution agents that update state after remediation completes.
@@ -70,6 +77,7 @@ terms:
 
   switch:
     label: Switch node
+    icon: assets/icons/switch-node.png
     category: control_flow
     short: Evaluates conditions and routes execution to the first matching branch. Supports many named paths plus a fallback when nothing matches — first-match-wins evaluation.
     detail: Use switch nodes to branch on severity tiers, environment (dev/staging/prod), or AI agent output categories. Unlike a binary conditional, a switch supports up to 100 ordered paths with visual or custom expressions.
@@ -77,6 +85,7 @@ terms:
 
   approval:
     label: Approval node
+    icon: assets/icons/approval-node.png
     category: control_flow
     short: Pauses the branch and creates an approval request. An approver reviews context, approves or rejects, and the workflow continues on the matching path.
     detail: Place approvals before destructive changes, production modifications, or actions recommended by an AI agent. Configure approver users/groups, a decision window, and fallback behavior if no one responds in time.
@@ -84,6 +93,7 @@ terms:
 
   conditional:
     label: Conditional node
+    icon: assets/icons/glossary/conditional-node.svg
     category: control_flow
     short: Evaluates one expression and routes to a true or false branch. Use when you need binary branching; use a switch for multiple named paths.
     detail: Conditional steps share the same expression builder as switch nodes. Leave the false path unconnected to end the branch when the condition is not met.
@@ -91,6 +101,7 @@ terms:
 
   loop:
     label: Loop node
+    icon: assets/icons/glossary/loop-node.svg
     category: control_flow
     short: Repeats a set of steps for each item in a collection or while a condition is true. Downstream steps inside the loop body access loop variables such as the current item and index.
     detail: Loops process batches — hosts, tickets, certificates — without duplicating canvas steps. Combine with converge when parallel iterations need to rejoin.
@@ -98,6 +109,7 @@ terms:
 
   aap_job_template:
     label: AAP job template
+    icon: assets/icons/launch-aap-job-template.png
     category: aap
     short: Launches a single Ansible Automation Platform job template from the workflow. The engine polls until the job completes and exposes results to downstream steps.
     detail: Run one playbook — patch, remediate, notify — with resolved inventory, credentials, limits, and extra vars. The standard bridge between Automation Orchestrator reasoning and AAP execution.
@@ -105,6 +117,7 @@ terms:
 
   aap_job_template_dynamic:
     label: AAP job template (dynamic expression)
+    icon: assets/icons/launch-aap-job-template.png
     category: aap
     short: Launches an AAP job template selected at runtime via expressions — for example, dragging job_template_name from an upstream agentic node instead of picking a fixed template in the dropdown.
     detail: Toggle Use expressions on the AAP job step to replace organization and job template dropdowns with expression fields. Ideal when AI triage picks the remediation playbook based on incident context.
@@ -112,6 +125,7 @@ terms:
 
   aap_workflow_template:
     label: AAP workflow template
+    icon: assets/icons/glossary/aap-workflow-template.svg
     category: aap
     short: Launches an entire AAP workflow job template — a multi-job pipeline already defined in Ansible Automation Platform with its own conditionals and convergence.
     detail: Use when remediation spans multiple coordinated job templates inside AAP. Can also be selected dynamically with expressions when an agent recommends a workflow rather than a single job.
@@ -119,6 +133,7 @@ terms:
 
   script:
     label: Script node
+    icon: assets/icons/script-node.png
     category: actions
     short: Runs JavaScript in the workflow engine to parse, transform, or reshape data between steps — for example, normalizing an API response before an agent or AAP job consumes it.
     detail: Script steps are ideal for lightweight data manipulation without deploying a playbook. Test them in the builder with mock upstream output before publishing the workflow.
@@ -126,6 +141,7 @@ terms:
 
   http_request:
     label: HTTP request
+    icon: assets/icons/glossary/http-request.svg
     category: actions
     short: Calls an external HTTP API from the workflow. Response status and body become available to downstream steps through the expression system.
     detail: Use HTTP request steps to integrate REST endpoints that are not exposed through MCP tools. Verify endpoints before test runs — step testing sends real network requests.

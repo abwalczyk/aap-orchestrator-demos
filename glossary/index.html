@@ -32,6 +32,19 @@ ao_glossary_page: true
         {% assign term = term_pair[1] %}
         {% if term.category == cat_id %}
           <article class="glossary-card" id="{{ term_key }}">
+            {% if term.icon %}
+              <div class="glossary-card__icon-wrap">
+                <img
+                  src="{{ term.icon | relative_url }}"
+                  alt=""
+                  class="glossary-card__icon{% if term.icon contains '.svg' %} glossary-card__icon--placeholder{% endif %}"
+                  width="120"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                >
+              </div>
+            {% endif %}
             <h3 class="glossary-card__title">{{ term.label }}</h3>
             <p class="glossary-card__short">{{ term.short }}</p>
             {% if term.detail and term.detail != term.short %}
