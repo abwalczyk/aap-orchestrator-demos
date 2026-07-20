@@ -1,0 +1,25 @@
+{
+  "trigger_inputs": {
+    "user_message": "Can we add dark mode to the dashboard?"
+  },
+  "pre_resolved_nodes": {
+    "classifier": {
+      "result": {
+        "content": {
+          "category": "feature_request",
+          "confidence": "high",
+          "reasoning": "The user is requesting a new capability to be added"
+        }
+      }
+    },
+    "route_by_category": {
+      "status": "completed",
+      "matched_port": "case_1"
+    }
+  },
+  "expected_output": {
+    "response_text": "Thank you for the suggestion! We will review your request to add dark mode to the dashboard with the product team.",
+    "suggested_priority": "medium",
+    "next_action": "Add to product backlog for review in next sprint planning"
+  }
+}

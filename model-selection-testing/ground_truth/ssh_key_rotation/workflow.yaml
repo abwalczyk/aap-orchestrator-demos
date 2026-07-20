@@ -1,0 +1,14 @@
+# Update these IDs to match your actual AO workflow and node IDs
+workflow_id: "REPLACE_WITH_WORKFLOW_UUID"
+
+steps:
+  - name: audit
+    node_id: "REPLACE_WITH_AUDIT_NODE_ID"
+    ground_truth_file: step1_audit.json
+    description: Audit SSH key age and compliance posture
+
+  - name: plan
+    node_id: "REPLACE_WITH_PLAN_NODE_ID"
+    ground_truth_file: step2_plan.json
+    description: Plan the SSH key rotation sequence
+    depends_on: audit

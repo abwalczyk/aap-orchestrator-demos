@@ -1,0 +1,91 @@
+iterations: 3
+
+models:
+  # Frontier models (via API keys)
+  - name: claude-sonnet-4-6
+    provider: anthropic
+  - name: gpt-4o
+    provider: openai
+  - name: gemini-2.5-pro
+    provider: google
+
+  # Open-source models (via LiteMaaS, $0 cost)
+  - name: Qwen3.6-35B-A3B
+    provider: litemaas
+  - name: Qwen2.5-VL-7B-Instruct
+    provider: litemaas
+  - name: Granite-Vision-3.2
+    provider: litemaas
+
+workflows:
+  # Replace workflow_id and node_id values with your AO instance's UUIDs.
+  # Run one workflow/step at a time with:
+  #   python3 run.py model-sweep --workflow ticket_classifier --step classify_bug
+
+  - name: ticket_classifier
+    workflow_id: f7c4776b-b5b5-4d43-9911-14e3a6095dba
+    steps:
+      - node_id: classifier
+        name: classify_bug
+        ground_truth: ground_truth/ticket_classifier/step1_classify_bug.json
+      - node_id: classifier
+        name: classify_feature
+        ground_truth: ground_truth/ticket_classifier/step1_classify_feature.json
+      - node_id: classifier
+        name: classify_question
+        ground_truth: ground_truth/ticket_classifier/step1_classify_question.json
+      - node_id: bug_responder
+        name: respond_bug
+        ground_truth: ground_truth/ticket_classifier/step2_respond_bug.json
+      - node_id: feature_responder
+        name: respond_feature
+        ground_truth: ground_truth/ticket_classifier/step2_respond_feature.json
+
+  # Additional workflow examples (uncomment and fill in IDs when deployed)
+  #
+  # - name: ticket_enrichment
+  #   workflow_id: REPLACE_WITH_WORKFLOW_UUID
+  #   steps:
+  #     - node_id: REPLACE_WITH_NODE_ID
+  #       name: triage
+  #       ground_truth: ground_truth/ticket_enrichment/step1_triage.json
+  #     - node_id: REPLACE_WITH_NODE_ID
+  #       name: recommend
+  #       ground_truth: ground_truth/ticket_enrichment/step2_recommend.json
+  #
+  # - name: cert_rotation
+  #   workflow_id: REPLACE_WITH_WORKFLOW_UUID
+  #   steps:
+  #     - node_id: REPLACE_WITH_NODE_ID
+  #       name: assess
+  #       ground_truth: ground_truth/cert_rotation/step1_assess.json
+  #     - node_id: REPLACE_WITH_NODE_ID
+  #       name: plan
+  #       ground_truth: ground_truth/cert_rotation/step2_plan.json
+  #
+  # - name: credential_revocation
+  #   workflow_id: REPLACE_WITH_WORKFLOW_UUID
+  #   steps:
+  #     - node_id: REPLACE_WITH_NODE_ID
+  #       name: evaluate
+  #       ground_truth: ground_truth/credential_revocation/step1_evaluate.json
+  #     - node_id: REPLACE_WITH_NODE_ID
+  #       name: respond
+  #       ground_truth: ground_truth/credential_revocation/step2_respond.json
+  #
+  # - name: ssh_key_rotation
+  #   workflow_id: REPLACE_WITH_WORKFLOW_UUID
+  #   steps:
+  #     - node_id: REPLACE_WITH_NODE_ID
+  #       name: audit
+  #       ground_truth: ground_truth/ssh_key_rotation/step1_audit.json
+  #     - node_id: REPLACE_WITH_NODE_ID
+  #       name: plan
+  #       ground_truth: ground_truth/ssh_key_rotation/step2_plan.json
+
+judges:
+  default_model: "openai:/Qwen3.6-35B-A3B"
+  anthropic_model: "openai:/Qwen3.6-35B-A3B"
+
+mlflow:
+  experiment_name: atrotter-testing

@@ -1,0 +1,11 @@
+{
+  "trigger_inputs": {
+    "user_message": "Can we add dark mode to the dashboard?"
+  },
+  "pre_resolved_nodes": {},
+  "expected_output": {
+    "category": "feature_request",
+    "confidence": "high",
+    "reasoning": "The user is requesting a new capability to be added"
+  }
+}

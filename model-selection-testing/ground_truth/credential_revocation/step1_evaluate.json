@@ -1,0 +1,23 @@
+{
+  "trigger_inputs": {
+    "alert_type": "credential_compromise",
+    "credential_id": "svc-account-deploy-prod",
+    "credential_type": "service_account",
+    "compromise_indicator": "Credential found in public GitHub repository",
+    "affected_systems": ["deploy-server-01", "deploy-server-02", "ci-runner-03"],
+    "environment": "production",
+    "last_used": "2026-07-12T14:30:00Z"
+  },
+  "pre_resolved_nodes": {},
+  "expected_output": {
+    "blast_radius": "high",
+    "blast_radius_reasoning": "Service account has access to 3 production systems. Credential actively used within last 24 hours. Public exposure confirmed.",
+    "urgency": "immediate"
+  },
+  "expected_tool_calls": [
+    {
+      "tool": "aap_get_credential_details",
+      "args": {"credential_id": "svc-account-deploy-prod"}
+    }
+  ]
+}

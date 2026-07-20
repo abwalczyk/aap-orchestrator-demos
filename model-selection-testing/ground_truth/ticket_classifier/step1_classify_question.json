@@ -1,0 +1,11 @@
+{
+  "trigger_inputs": {
+    "user_message": "How do I reset my password?"
+  },
+  "pre_resolved_nodes": {},
+  "expected_output": {
+    "category": "question",
+    "confidence": "high",
+    "reasoning": "The user is asking for help with a specific action"
+  }
+}

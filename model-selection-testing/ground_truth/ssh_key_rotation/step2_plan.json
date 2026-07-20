@@ -1,0 +1,39 @@
+{
+  "trigger_inputs": {
+    "audit_type": "ssh_key_age",
+    "hostname": "bastion-01.corp.internal",
+    "key_type": "RSA-2048",
+    "key_age_days": 400,
+    "compliance_framework": "SOC2",
+    "system_criticality": "high",
+    "active_sessions": 3,
+    "dependent_systems": ["jumphost-02", "monitoring-server-01"]
+  },
+  "pre_resolved_nodes": {
+    "REPLACE_WITH_AUDIT_NODE_ID": {
+      "output": {
+        "compliance_status": "non_compliant",
+        "compliance_reasoning": "SOC2 requires key rotation within 365 days. Current key is 400 days old.",
+        "risk_assessment": "high"
+      }
+    }
+  },
+  "expected_output": {
+    "recommended_action": "needs_approval",
+    "recommended_job_template": "ssh-key-rotation-sequenced",
+    "rotation_plan": [
+      "Generate new ED25519 key pair",
+      "Distribute public key to bastion-01 and 2 dependent systems",
+      "Wait for active sessions to drain (3 sessions)",
+      "Swap authorized_keys on all systems",
+      "Verify SSH connectivity",
+      "Remove old RSA-2048 key"
+    ]
+  },
+  "expected_tool_calls": [
+    {
+      "tool": "aap_list_job_templates",
+      "should_match": "ssh key rotation"
+    }
+  ]
+}

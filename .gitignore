@@ -2,15 +2,14 @@
 *.key
 .DS_Store
 *.retry
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 _site/
 .jekyll-cache/
 .bundle/
 vendor/bundle/
 Gemfile.lock
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 *-working.json
+
+# Model selection testing
+model-selection-testing/.env
+model-selection-testing/venv/
+model-selection-testing/harness/__pycache__/

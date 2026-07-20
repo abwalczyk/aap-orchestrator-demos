@@ -1,0 +1,11 @@
+{
+  "trigger_inputs": {
+    "user_message": "The login page throws a 500 error after the latest update"
+  },
+  "pre_resolved_nodes": {},
+  "expected_output": {
+    "category": "bug",
+    "confidence": "high",
+    "reasoning": "The user is reporting an error on the login page after an update"
+  }
+}

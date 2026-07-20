@@ -1,0 +1,32 @@
+{
+  "trigger_inputs": {
+    "incident_id": "INC0012345",
+    "short_description": "Disk usage at 95% on prod-db-03",
+    "severity": "high",
+    "affected_ci": "prod-db-03",
+    "environment": "production",
+    "description": "Monitoring alert triggered. /var/log partition at 95%. Database writes may fail."
+  },
+  "pre_resolved_nodes": {
+    "REPLACE_WITH_TRIAGE_NODE_ID": {
+      "output": {
+        "category": "infrastructure",
+        "priority": "critical",
+        "root_cause_assessment": "Log partition nearing capacity",
+        "risk_level": "high"
+      }
+    }
+  },
+  "expected_output": {
+    "recommended_action": "auto_remediate",
+    "recommended_job_template": "cleanup-log-partition",
+    "reasoning": "Production database at risk of write failure due to disk. Automated log cleanup is low-risk and well-understood.",
+    "route_decision": "auto_remediate"
+  },
+  "expected_tool_calls": [
+    {
+      "tool": "aap_list_job_templates",
+      "should_match": "log cleanup or disk cleanup"
+    }
+  ]
+}

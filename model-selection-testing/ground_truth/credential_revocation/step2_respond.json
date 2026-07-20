@@ -1,0 +1,36 @@
+{
+  "trigger_inputs": {
+    "alert_type": "credential_compromise",
+    "credential_id": "svc-account-deploy-prod",
+    "credential_type": "service_account",
+    "compromise_indicator": "Credential found in public GitHub repository",
+    "affected_systems": ["deploy-server-01", "deploy-server-02", "ci-runner-03"],
+    "environment": "production",
+    "last_used": "2026-07-12T14:30:00Z"
+  },
+  "pre_resolved_nodes": {
+    "REPLACE_WITH_EVALUATE_NODE_ID": {
+      "output": {
+        "blast_radius": "high",
+        "blast_radius_reasoning": "Service account has access to 3 production systems. Public exposure confirmed.",
+        "urgency": "immediate"
+      }
+    }
+  },
+  "expected_output": {
+    "recommended_action": "auto_remediate",
+    "recommended_job_template": "emergency-credential-revocation",
+    "revocation_workflow": [
+      "Revoke credential immediately",
+      "Rotate on all 3 affected systems",
+      "Audit recent access logs",
+      "Notify security team"
+    ]
+  },
+  "expected_tool_calls": [
+    {
+      "tool": "aap_list_job_templates",
+      "should_match": "credential revocation"
+    }
+  ]
+}

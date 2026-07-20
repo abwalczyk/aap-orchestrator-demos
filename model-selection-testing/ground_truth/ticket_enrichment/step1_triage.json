@@ -1,0 +1,23 @@
+{
+  "trigger_inputs": {
+    "incident_id": "INC0012345",
+    "short_description": "Disk usage at 95% on prod-db-03",
+    "severity": "high",
+    "affected_ci": "prod-db-03",
+    "environment": "production",
+    "description": "Monitoring alert triggered. /var/log partition at 95%. Database writes may fail."
+  },
+  "pre_resolved_nodes": {},
+  "expected_output": {
+    "category": "infrastructure",
+    "priority": "critical",
+    "root_cause_assessment": "Log partition nearing capacity, risk of database write failure",
+    "risk_level": "high"
+  },
+  "expected_tool_calls": [
+    {
+      "tool": "servicenow_get_incident",
+      "args": {"incident_id": "INC0012345"}
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "trigger_inputs": {
+    "user_message": "The login page throws a 500 error after the latest update"
+  },
+  "pre_resolved_nodes": {
+    "classifier": {
+      "id": "mock",
+      "result": {
+        "content": {
+          "category": "bug",
+          "confidence": "high",
+          "reasoning": "The user is reporting an error on the login page after an update"
+        },
+        "response_metadata": {
+          "model_name": "mock",
+          "finish_reason": "stop"
+        }
+      },
+      "status": "completed",
+      "agent_type": "GenericAgent"
+    },
+    "route_by_category": {
+      "status": "completed",
+      "matched_port": "case_0"
+    }
+  },
+  "expected_output": {
+    "response_text": "Thank you for reporting this issue. We are investigating the 500 error on the login page following the recent update.",
+    "suggested_priority": "high",
+    "next_action": "Assign to engineering team for immediate investigation of the login page regression"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "trigger_inputs": {
+    "alert_type": "cert_expiring",
+    "hostname": "api-gateway-01.prod.internal",
+    "certificate_cn": "*.prod.internal",
+    "days_until_expiry": 7,
+    "environment": "production",
+    "service": "api-gateway",
+    "compliance_framework": "PCI-DSS"
+  },
+  "pre_resolved_nodes": {
+    "REPLACE_WITH_ASSESS_NODE_ID": {
+      "output": {
+        "risk_score": "critical",
+        "risk_justification": "PCI-DSS compliance requires valid certificates. 7 days leaves minimal buffer.",
+        "compliance_impact": "PCI-DSS non-compliance if cert expires"
+      }
+    }
+  },
+  "expected_output": {
+    "recommended_action": "needs_approval",
+    "recommended_job_template": "rotate-tls-certificate",
+    "rotation_sequence": [
+      "Request new certificate",
+      "Stage on target host",
+      "Swap active certificate",
+      "Verify connectivity",
+      "Revoke old certificate"
+    ]
+  },
+  "expected_tool_calls": [
+    {
+      "tool": "aap_list_job_templates",
+      "should_match": "certificate rotation"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Update these IDs to match your actual AO workflow and node IDs
+workflow_id: "REPLACE_WITH_WORKFLOW_UUID"
+
+steps:
+  - name: assess
+    node_id: "REPLACE_WITH_ASSESS_NODE_ID"
+    ground_truth_file: step1_assess.json
+    description: Assess certificate expiration risk and compliance impact
+
+  - name: plan
+    node_id: "REPLACE_WITH_PLAN_NODE_ID"
+    ground_truth_file: step2_plan.json
+    description: Plan the certificate rotation sequence
+    depends_on: assess
