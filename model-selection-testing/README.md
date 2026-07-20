@@ -134,7 +134,7 @@ This repeats for each model and each iteration.
    ```bash
    python3 -m venv venv
    source venv/bin/activate
-   pip install mlflow httpx pyyaml python-dotenv
+   pip install -r requirements.txt
    ```
 
 3. Update `harness/config.yaml` with your workflow IDs and node IDs from AO.
