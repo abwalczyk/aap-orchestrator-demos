@@ -8,10 +8,12 @@ A monitoring or ticketing integration cannot classify an incident. Instead of gu
 
 1. Receives an **unknown issue** event from **AWS SQS**
 2. **EDA** launches an AAP job that **POSTs** the event to the **automation orchestrator (AO) webhook**
-3. **AO** starts a workflow and launches **Linux - Run xSOS Analysis** on the reported host
-4. **xSOS** collects a fast, human-readable system summary for operators or an AI agent to reason over
+3. **AO** starts a workflow and launches **Linux - Run xSOS Analysis** and **Linux - Gather Host Facts** in parallel on the reported host
+4. **xSOS** collects a fast, human-readable system summary; the facts playbook publishes structured OS/CPU/memory/load artifacts alongside it
+5. An AO **Task Agent (AI)** node reasons over both artifact sets and produces a plain-language RCA summary
+6. **Linux - Notify RCA Chatroom** posts that summary to **Mattermost** for a human to read and decide next steps
 
-This pattern complements automation orchestrator agent workflows: EDA reacts to the event; xSOS gathers facts; AO or MCP can decide next steps.
+This pattern complements automation orchestrator agent workflows: EDA reacts to the event; xSOS and the facts playbook gather evidence in parallel; an AI node reasons over both; a human reviews the result in chat.
 
 ## Suggested folder name
 
@@ -32,8 +34,11 @@ flowchart LR
   C --> D["AAP job: Post AO Webhook"]
   D --> E[AO webhook trigger]
   E --> F["AAP job: Run xSOS Analysis"]
-  F --> G[RCA report + artifacts]
-  G --> H[Operator or AI decides next step]
+  E --> F2["AAP job: Gather Host Facts"]
+  F --> G[AI reasons over report + facts]
+  F2 --> G
+  G --> H["AAP job: Notify RCA Chatroom"]
+  H --> I[Human reviews in Mattermost]
 ```
 
 The extra Controller hop is **expected platform behavior**, not a workaround. See [EDA actions on AAP](#eda-actions-on-aap) below.
@@ -68,7 +73,20 @@ An alternate rulebook using `run_module` + `ansible.builtin.uri` lives at [`eda/
 | [`setup_sqs_queue.yml`](playbooks/setup_sqs_queue.yml) | Create the SQS queue (one-time) | Once per AWS account/region |
 | [`publish_unknown_issue_event.yml`](playbooks/publish_unknown_issue_event.yml) | Push a demo event to SQS | Manual test / smoke test |
 | [`post_ao_webhook.yml`](playbooks/post_ao_webhook.yml) | POST event JSON to AO webhook | **EDA** via `run_job_template` (JT: Linux - Post AO Webhook) |
-| [`run_xsos_analysis.yml`](playbooks/run_xsos_analysis.yml) | Install xSOS, run analysis, save report | **AO workflow** (JT: Linux - Run xSOS Analysis) |
+| [`run_xsos_analysis.yml`](playbooks/run_xsos_analysis.yml) | Install xSOS, run analysis, save report, publish artifacts | **AO workflow** (JT: Linux - Run xSOS Analysis) |
+| [`gather_host_facts.yml`](playbooks/gather_host_facts.yml) | Gather Linux facts (OS, CPU, memory, load, mounts) and publish artifacts | **AO workflow**, in parallel with xSOS analysis (JT: Linux - Gather Host Facts) |
+| [`notify_chatroom.yml`](playbooks/notify_chatroom.yml) | Post an AI-generated RCA summary to Mattermost | **AO workflow**, after an AI/Task Agent node reasons over the artifacts (JT: Linux - Notify RCA Chatroom) |
+
+### Facts and artifacts published via `set_stats`
+
+`run_xsos_analysis.yml` and `gather_host_facts.yml` both run against the reported host and publish their findings with `ansible.builtin.set_stats`, so every value below is available as an artifact on later AO workflow nodes (including an AI/Task Agent node) without re-reading the host:
+
+| Source playbook | Artifacts |
+|---|---|
+| `run_xsos_analysis.yml` | `analyzed_host`, `issue_summary`, `analyzed_at`, `xsos_report_path`, `xsos_report_preview` |
+| `gather_host_facts.yml` | `analyzed_host`, `gathered_at`, `os_distribution`, `kernel`, `architecture`, `uptime_seconds`, `total_memory_mb`, `free_memory_mb`, `swap_total_mb`, `swap_free_mb`, `cpu_count`, `load_1m`/`load_5m`/`load_15m`, `default_ipv4`, `mounts`, `selinux_status` |
+
+`notify_chatroom.yml` expects an `ai_summary` (or `rca_summary`) extra var — the text an AO AI/Task Agent node produced after reasoning over the artifacts above — plus `notify_host`, `issue_summary`, `os_distribution`, and `xsos_report_path` to build the Mattermost message. All have sane defaults if a field wasn't threaded through.
 
 ## Quick start
 
@@ -124,8 +142,11 @@ Summary:
 2. Create job templates:
    - **`Linux - Post AO Webhook`** → `event-driven-xsos-rca/playbooks/post_ao_webhook.yml` (called by EDA)
    - **`Linux - Run xSOS Analysis`** → `event-driven-xsos-rca/playbooks/run_xsos_analysis.yml` (called by AO workflow)
+   - **`Linux - Gather Host Facts`** → `event-driven-xsos-rca/playbooks/gather_host_facts.yml` (called by AO workflow, in parallel with the xSOS node — same inventory/credential as xSOS)
+   - **`Linux - Notify RCA Chatroom`** → `event-driven-xsos-rca/playbooks/notify_chatroom.yml` (called by AO workflow, after the AI reasoning node — needs `api_chat_token` on the Mattermost credential, same as the disk-utilization demo's Notify Chatroom template)
 3. Create an AO workflow with an **EDA webhook trigger**; copy the webhook URL into activation extra vars
-4. Create a rulebook activation with **AAP Controller credential**, **AWS SQS credential**, and extra vars:
+4. Fan the webhook trigger out to **Run xSOS Analysis** and **Gather Host Facts** in parallel, join both into a **Task Agent (AI)** node prompted to summarize host health from the published artifacts, then route its output as `ai_summary` into **Notify RCA Chatroom**
+5. Create a rulebook activation with **AAP Controller credential**, **AWS SQS credential**, and extra vars:
 
 ```yaml
 aws_region: us-east-1
@@ -134,7 +155,7 @@ ao_webhook_url: http://<ao-host>:8080/api/v1/webhooks/eda/<uuid>
 ao_webhook_validate_certs: false
 ```
 
-5. Run `publish_unknown_issue_event.yml` — within ~5 seconds EDA should launch **Post AO Webhook**, then AO should start the xSOS workflow
+6. Run `publish_unknown_issue_event.yml` — within ~5 seconds EDA should launch **Post AO Webhook**, then AO should start the xSOS workflow
 
 The rulebook uses **`run_job_template`**, not `run_module`, because AAP EDA only supports Controller-backed actions. The SQS source exposes your JSON payload as **`event.body`** in the rulebook (not `event.payload`).
 
@@ -144,17 +165,31 @@ The rulebook uses **`run_job_template`**, not `run_module`, because AAP EDA only
 ansible-playbook -i inventory/hosts.yml playbooks/run_xsos_analysis.yml \
   -e _host=rca-target \
   -e issue_summary="Manual xSOS smoke test"
+
+ansible-playbook -i inventory/hosts.yml playbooks/gather_host_facts.yml \
+  -e _host=rca-target
 ```
 
-Reports land on the target under `xsos_output_dir` (default `/var/tmp/xsos-rca/`). Artifacts are published via `set_stats` for downstream AO steps.
+Reports land on the target under `xsos_output_dir` (default `/var/tmp/xsos-rca/`). Both playbooks publish their findings via `set_stats` for downstream AO steps — run them back-to-back locally, or in parallel from AO, since neither depends on the other.
+
+Once you have an AI-generated summary (from an AO Task Agent node, or typed in for a smoke test), try the notify step on its own:
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/notify_chatroom.yml \
+  -e notify_host=rca-target \
+  -e issue_summary="Manual xSOS smoke test" \
+  -e ai_summary="CPU and memory look healthy; load average is elevated due to a stuck backup job — recommend killing PID 4821 and re-running the backup off-peak." \
+  -e api_chat_token="<mattermost bot token>"
+```
 
 ## Prerequisites
 
 | Component | Required | Notes |
 |---|---|---|
-| RHEL host | Yes | SSH from AAP; xSOS runs on the affected system |
+| RHEL host | Yes | SSH from AAP; xSOS and the facts playbook run on the affected system |
 | AWS account | Yes | SQS queue + credentials on controller |
-| AAP Controller | Yes | Job templates for the three playbooks |
+| AAP Controller | Yes | Job templates for the five playbooks |
+| Mattermost | Yes | Chat destination for the AI-generated RCA summary |
 | EDA | Yes | SQS source → `run_job_template` → Post AO Webhook → AO |
 | AAP Controller credential on EDA activation | Yes | Required for `run_job_template` |
 | `amazon.aws` collection | Yes | SQS source plugin in decision environment |
@@ -200,5 +235,5 @@ Check `klist` first if you're not sure whether you already have a valid ticket �
 
 ## Next steps
 
-- Optionally chain to automation orchestrator: xSOS artifacts → Task Agent → approval → remediation job template
+- Wire the AI reasoning step: xSOS + host facts artifacts → Task Agent → **Notify RCA Chatroom** → optional approval → remediation job template
 - Register on the demo site in `_data/demos.yml` when ready to publish

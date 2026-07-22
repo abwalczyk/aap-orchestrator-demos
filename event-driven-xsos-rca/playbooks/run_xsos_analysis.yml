@@ -65,8 +65,10 @@
       ansible.builtin.set_stats:
         data:
           analyzed_host: "{{ inventory_hostname }}"
+          issue_summary: "{{ resolved_issue_summary }}"
+          analyzed_at: "{{ ansible_date_time.iso8601 }}"
           xsos_report_path: "{{ xsos_output_dir }}/xsos-{{ report_stamp }}-{{ inventory_hostname }}.txt"
-          xsos_report_preview: "{{ xsos_result.stdout_lines[:40] | join('\n') }}"
+          xsos_report_preview: "{{ xsos_result.stdout_lines[:80] | join('\n') }}"
         per_host: false
         aggregate: false
       run_once: true

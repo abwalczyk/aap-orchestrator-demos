@@ -1,0 +1,44 @@
+---
+- name: Notify Mattermost chatroom — xSOS RCA AI summary
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Apply defaults
+      ansible.builtin.set_fact:
+        notify_host: "{{ notify_host | default(analyzed_host | default('unknown')) | string }}"
+        issue_summary: "{{ issue_summary | default('Unknown production issue') | string }}"
+        ai_summary: "{{ ai_summary | default(rca_summary | default('No AI analysis was provided for this run.')) | string }}"
+        xsos_report_path: "{{ xsos_report_path | default('unknown') | string }}"
+        os_distribution: "{{ os_distribution | default('unknown') | string }}"
+
+    - name: Build Mattermost attachment
+      ansible.builtin.set_fact:
+        mattermost_attachments:
+          - text: "{{ ai_summary }}"
+            color: '#3498db'
+            title: "xSOS RCA — {{ notify_host }}"
+            fields:
+              - title: Host
+                value: "{{ notify_host }}"
+                short: true
+              - title: OS
+                value: "{{ os_distribution }}"
+                short: true
+              - title: Reported Issue
+                value: "{{ issue_summary }}"
+                short: false
+              - title: Full xSOS Report
+                value: "{{ xsos_report_path }}"
+                short: false
+
+    - name: Send notification message via Mattermost
+      community.general.mattermost:
+        url: http://{{ mattermost_server | default('44.209.231.244:8065') }}
+        api_key: "{{ api_chat_token }}"
+        attachments: "{{ mattermost_attachments }}"
+      delegate_to: localhost
+
+    - name: Show what was sent
+      ansible.builtin.debug:
+        msg: "{{ mattermost_attachments }}"

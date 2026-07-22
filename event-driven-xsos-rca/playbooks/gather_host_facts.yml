@@ -1,0 +1,43 @@
+---
+- name: Gather Linux facts for RCA (AO / AAP triggered — runs parallel to xSOS analysis)
+  hosts: "{{ _host | default('all') }}"
+  become: false
+  gather_facts: true
+  tasks:
+    - name: Resolve load average fields
+      ansible.builtin.set_fact:
+        _loadavg_1m: "{{ ansible_loadavg['1m'] | default('unknown') if ansible_loadavg is defined else 'unknown' }}"
+        _loadavg_5m: "{{ ansible_loadavg['5m'] | default('unknown') if ansible_loadavg is defined else 'unknown' }}"
+        _loadavg_15m: "{{ ansible_loadavg['15m'] | default('unknown') if ansible_loadavg is defined else 'unknown' }}"
+
+    - name: Publish host facts for downstream automation orchestrator steps
+      ansible.builtin.set_stats:
+        data:
+          analyzed_host: "{{ inventory_hostname }}"
+          gathered_at: "{{ ansible_date_time.iso8601 }}"
+          os_distribution: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          kernel: "{{ ansible_kernel }}"
+          architecture: "{{ ansible_architecture }}"
+          uptime_seconds: "{{ ansible_uptime_seconds | default('unknown') }}"
+          total_memory_mb: "{{ ansible_memtotal_mb | default('unknown') }}"
+          free_memory_mb: "{{ ansible_memfree_mb | default('unknown') }}"
+          swap_total_mb: "{{ ansible_swaptotal_mb | default('unknown') }}"
+          swap_free_mb: "{{ ansible_swapfree_mb | default('unknown') }}"
+          cpu_count: "{{ ansible_processor_vcpus | default(ansible_processor_count | default('unknown')) }}"
+          load_1m: "{{ _loadavg_1m }}"
+          load_5m: "{{ _loadavg_5m }}"
+          load_15m: "{{ _loadavg_15m }}"
+          default_ipv4: "{{ ansible_default_ipv4.address | default('unknown') }}"
+          mounts: "{{ ansible_mounts | map(attribute='mount') | list | join(', ') }}"
+          selinux_status: "{{ ansible_selinux.status | default('unknown') }}"
+        per_host: false
+        aggregate: false
+      run_once: true
+
+    - name: Show gathered facts summary
+      ansible.builtin.debug:
+        msg:
+          host: "{{ inventory_hostname }}"
+          distribution: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          kernel: "{{ ansible_kernel }}"
+          load_avg: "{{ _loadavg_1m }}, {{ _loadavg_5m }}, {{ _loadavg_15m }}"
