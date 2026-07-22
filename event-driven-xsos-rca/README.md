@@ -171,6 +171,12 @@ Reports land on the target under `xsos_output_dir` (default `/var/tmp/xsos-rca/`
 
 Use an instance role, access keys in a credential, or AAP cloud credential — match your environment.
 
+## AWS credentials: laptop vs. AAP
+
+`setup_sqs_queue.yml` and `publish_unknown_issue_event.yml` are the two playbooks you'd run manually (setup once, publish to smoke-test). Both default `aws_profile` to your local `saml` SSO profile for convenience on a laptop — that session expires periodically (Kerberos ticket + SAML token), so if you hit `ProfileNotFound` or `ExpiredToken`, re-run your normal AWS SSO login (e.g. `kinit`, then `aws-saml.py`) and retry.
+
+If either playbook is ever run **on AAP** (job template with an AWS credential attached), pass `-e aws_profile=""` so the scripts skip profile lookup entirely and fall back to the credentials AAP injects (access key/secret or instance role) — no laptop session involved, and nothing expires.
+
 ## Next steps
 
 - Optionally chain to automation orchestrator: xSOS artifacts → Task Agent → approval → remediation job template

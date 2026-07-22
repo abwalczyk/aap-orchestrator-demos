@@ -7,13 +7,15 @@
     - name: Apply defaults
       ansible.builtin.set_fact:
         aws_region: "{{ aws_region | default('us-east-1') }}"
-        aws_profile: "{{ lookup('env', 'AWS_PROFILE') | default('saml', true) }}"
+        # Local laptop runs default to the "saml" SSO profile. On AAP, pass -e aws_profile=""
+        # so boto3 falls back to the AWS credential injected by the job template/activation.
+        aws_profile: "{{ aws_profile | default(lookup('env', 'AWS_PROFILE'), true) | default('saml', true) }}"
         xsos_event_queue_name: "{{ xsos_event_queue_name | default('aap-unknown-issue-rca') }}"
 
     - name: Create unknown-issue event queue
       ansible.builtin.command:
         cmd: >-
-          python3 -c "import boto3, json, os; s=boto3.Session(profile_name=os.environ['AWS_PROFILE']);
+          python3 -c "import boto3, json, os; p=os.environ.pop('AWS_PROFILE', None); s=boto3.Session(profile_name=p) if p else boto3.Session();
           r=s.client('sqs', region_name=os.environ['AWS_DEFAULT_REGION']).create_queue(QueueName=os.environ['QUEUE_NAME'],
           Attributes={'MessageRetentionPeriod':'345600','VisibilityTimeout':'300'},
           tags={'Demo':'event-driven-xsos-rca','ManagedBy':'ansible'});
@@ -29,7 +31,7 @@
     - name: Resolve queue URL
       ansible.builtin.command:
         cmd: >-
-          python3 -c "import boto3, json, os; s=boto3.Session(profile_name=os.environ['AWS_PROFILE']);
+          python3 -c "import boto3, json, os; p=os.environ.pop('AWS_PROFILE', None); s=boto3.Session(profile_name=p) if p else boto3.Session();
           print(json.dumps(s.client('sqs', region_name=os.environ['AWS_DEFAULT_REGION']).get_queue_url(QueueName=os.environ['QUEUE_NAME'])))"
       register: sqs_url
       changed_when: false
