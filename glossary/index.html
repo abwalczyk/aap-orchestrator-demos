@@ -40,13 +40,18 @@ ao_glossary_page: true
           {% endfor %}
           <article class="glossary-card" id="{{ term_key }}">
             {% if term.icon %}
+              {% if term.icon contains 'eda-trigger' or term.icon contains 'aap-execution' %}
+                {% assign icon_modifier = "glossary-card__icon--logo" %}
+              {% else %}
+                {% assign icon_modifier = "glossary-card__icon--mono" %}
+              {% endif %}
               <div class="glossary-card__icon-wrap">
                 <img
                   src="{{ term.icon | relative_url }}"
                   alt=""
-                  class="glossary-card__icon{% if term.icon contains '.svg' %} glossary-card__icon--placeholder{% endif %}"
-                  width="120"
-                  height="56"
+                  class="glossary-card__icon {{ icon_modifier }}"
+                  width="40"
+                  height="40"
                   loading="lazy"
                   decoding="async"
                 >

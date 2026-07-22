@@ -1,6 +1,6 @@
 # AO canvas building blocks — definitions sourced from nexus-docs (Automation Orchestrator).
 # Update short/detail text when upstream workflow docs change.
-# icon: canvas PNGs from workflow diagrams; SVG placeholders in assets/icons/glossary/ until official icons exist.
+# icon: Official PatternFly RhUi icon SVGs from @patternfly/react-icons (matching AO source).
 
 categories:
   triggers:
@@ -42,7 +42,7 @@ marketplace_filters:
 terms:
   manual_trigger:
     label: Manual trigger
-    icon: assets/icons/manual-trigger.png
+    icon: assets/icons/glossary/manual-trigger.svg
     category: triggers
     short: Starts a workflow when a user clicks Run in the UI or calls the workflow execution API. No extra configuration is required; optional input schema lets you pass parameters at launch.
     detail: A manual trigger is the simplest entry point for workflows you run on demand — demos, break-glass remediation, or operator-initiated changes. Runs appear in history with the triggering user as the source.
@@ -66,7 +66,7 @@ terms:
 
   agentic:
     label: AI node
-    icon: assets/icons/task-agent.png
+    icon: assets/icons/glossary/ai-node.svg
     category: ai
     short: Adds LLM reasoning to a workflow. The AI node receives a natural-language prompt, can call enabled tools, and returns structured output that downstream steps reference through expressions.
     detail: Use AI nodes for unstructured data — logs, tickets, alerts — where fixed rules fall short. The node can summarize, classify, triage incidents, and recommend remediation actions. Pair with approval steps for human oversight.
@@ -90,7 +90,7 @@ terms:
 
   switch:
     label: Switch node
-    icon: assets/icons/switch-node.png
+    icon: assets/icons/glossary/switch-node.svg
     category: control_flow
     short: Evaluates conditions and routes execution to the first matching branch. Supports many named paths plus a fallback when nothing matches — first-match-wins evaluation.
     detail: Use switch nodes to branch on severity tiers, environment (dev/staging/prod), or AI agent output categories. Unlike a binary conditional, a switch supports up to 100 ordered paths with visual or custom expressions.
@@ -98,7 +98,7 @@ terms:
 
   approval:
     label: Approval node
-    icon: assets/icons/approval-node.png
+    icon: assets/icons/glossary/approval-node.svg
     category: control_flow
     short: Pauses the branch and creates an approval request. An approver reviews context, approves or rejects, and the workflow continues on the matching path.
     detail: Place approvals before destructive changes, production modifications, or actions recommended by an AI agent. Configure approver users/groups, a decision window, and fallback behavior if no one responds in time.
@@ -122,7 +122,7 @@ terms:
 
   aap_job_template:
     label: AAP job template
-    icon: assets/icons/launch-aap-job-template.png
+    icon: assets/icons/glossary/aap-execution.svg
     category: aap
     short: Launches a single Ansible Automation Platform job template from the workflow. The engine polls until the job completes and exposes results to downstream steps.
     detail: Run one playbook — patch, remediate, notify — with resolved inventory, credentials, limits, and extra vars. The standard bridge between Automation Orchestrator reasoning and AAP execution.
@@ -130,7 +130,7 @@ terms:
 
   aap_job_template_dynamic:
     label: AAP job template (dynamic expression)
-    icon: assets/icons/launch-aap-job-template.png
+    icon: assets/icons/glossary/aap-execution.svg
     category: aap
     short: Launches an AAP job template selected at runtime via expressions — for example, dragging job_template_name from an upstream AI node instead of picking a fixed template in the dropdown.
     detail: Toggle Use expressions on the AAP job step to replace organization and job template dropdowns with expression fields. Ideal when AI triage picks the remediation playbook based on incident context.
@@ -138,7 +138,7 @@ terms:
 
   aap_workflow_template:
     label: AAP workflow template
-    icon: assets/icons/glossary/aap-workflow-template.svg
+    icon: assets/icons/glossary/aap-execution.svg
     category: aap
     short: Launches an entire AAP workflow job template — a multi-job pipeline already defined in Ansible Automation Platform with its own conditionals and convergence.
     detail: Use when remediation spans multiple coordinated job templates inside AAP. Can also be selected dynamically with expressions when an agent recommends a workflow rather than a single job.
@@ -146,7 +146,7 @@ terms:
 
   script:
     label: Script node
-    icon: assets/icons/script-node.png
+    icon: assets/icons/glossary/script-node.svg
     category: actions
     short: Runs JavaScript in the workflow engine to parse, transform, or reshape data between steps — for example, normalizing an API response before an agent or AAP job consumes it.
     detail: Script steps are ideal for lightweight data manipulation without deploying a playbook. Test them in the builder with mock upstream output before publishing the workflow.

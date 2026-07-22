@@ -850,21 +850,29 @@ button.ao-block:focus-visible {
 .glossary-card__icon-wrap {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   margin-bottom: 14px;
-  min-height: 56px;
+  border-radius: 10px;
+  background: rgba(124, 58, 237, 0.13);
 }
 
 .glossary-card__icon {
   display: block;
-  height: 56px;
-  width: auto;
-  max-width: 100%;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
-  object-position: left center;
 }
 
-.glossary-card__icon--placeholder {
-  opacity: 0.92;
+.glossary-card__icon--mono {
+  filter: brightness(0) invert(0.9);
+}
+
+.glossary-card__icon--logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
 }
 
 .glossary-card__title {
