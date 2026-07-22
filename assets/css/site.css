@@ -789,28 +789,6 @@ button.ao-block:focus-visible {
   line-height: 1.6;
 }
 
-.glossary-jump {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 40px;
-}
-
-.glossary-jump__link {
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #c4b5fd;
-  background: #151018;
-  border: 1px solid #3a2a4a;
-}
-
-.glossary-jump__link:hover {
-  background: #1f1528;
-  border-color: #5b3d7a;
-}
-
 .glossary-section {
   margin-bottom: 48px;
 }
@@ -855,13 +833,20 @@ button.ao-block:focus-visible {
   box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.35);
 }
 
+.glossary-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
 .glossary-card__icon-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-bottom: 14px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.06);
 }
@@ -925,7 +910,7 @@ button.ao-block:focus-visible {
 }
 
 .glossary-card__title {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 17px;
   font-weight: 600;
   color: #ffffff;
@@ -954,18 +939,11 @@ button.ao-block:focus-visible {
   color: #a78bfa;
 }
 
-.glossary-card__short {
-  margin: 0 0 10px;
+.glossary-card__description {
+  margin: 0;
   font-size: 14px;
   line-height: 1.6;
   color: #c4b5fd;
-}
-
-.glossary-card__detail {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #888;
 }
 
 .detail-tags {

@@ -1,5 +1,5 @@
 # AO canvas building blocks — definitions sourced from nexus-docs (Automation Orchestrator).
-# Update short/detail text when upstream workflow docs change.
+# Update description text when upstream workflow docs change.
 # icon: Official PatternFly RhUi icon SVGs from @patternfly/react-icons (matching AO source).
 
 categories:
@@ -48,142 +48,124 @@ terms:
     label: Manual trigger
     icon: assets/icons/glossary/manual-trigger.svg
     category: triggers
-    short: Starts a workflow when a user clicks Run in the UI or calls the workflow execution API. No extra configuration is required; optional input schema lets you pass parameters at launch.
-    detail: A manual trigger is the simplest entry point for workflows you run on demand — demos, break-glass remediation, or operator-initiated changes. Runs appear in history with the triggering user as the source.
+    description: Starts a workflow when a user clicks Run in the UI or calls the workflow execution API — the simplest entry point for on-demand runs like demos, break-glass remediation, or operator-initiated changes. No extra configuration is required, and runs appear in history with the triggering user as the source.
     nexus_source: workflows/add-a-manual-trigger.md
 
   schedule_trigger:
     label: Schedule trigger
     icon: assets/icons/glossary/schedule-trigger.svg
     category: triggers
-    short: Starts a workflow automatically on a recurring schedule — for example, nightly, hourly, or a custom cron expression.
-    detail: Use schedule triggers for recurring housekeeping — certificate renewal checks, drift detection, report generation — without a human or external system kicking off the run. Configure the cadence and time zone when you add the trigger.
+    description: Starts a workflow automatically on a recurring schedule — nightly, hourly, or a custom cron expression — for recurring housekeeping like certificate renewal checks, drift detection, or report generation without a human or external system kicking off the run.
     nexus_source: workflows/add-a-schedule-trigger.md
 
   webhook_trigger:
     label: Webhook trigger
     icon: assets/icons/glossary/webhook-trigger.svg
     category: triggers
-    short: Starts a workflow when an external system sends an authenticated HTTP POST to a generated endpoint URL. The request body becomes trigger input for downstream steps.
-    detail: Use webhook triggers to integrate CI/CD pipelines, monitoring tools, Splunk alerts, or any system that can POST JSON to Automation Orchestrator. Each workflow gets a unique URL path.
+    description: Starts a workflow when an external system sends an authenticated HTTP POST to a generated endpoint URL, with the request body available as trigger input for downstream steps. Commonly used to integrate CI/CD pipelines, monitoring tools, or Splunk alerts — each workflow gets its own unique URL path.
     nexus_source: workflows/add-a-webhook-trigger.md
 
   eda_trigger:
     label: Event-Driven Ansible trigger
     icon: assets/icons/glossary/eda-trigger.svg
     category: triggers
-    short: Starts a workflow when Event-Driven Ansible routes a matching event to an Automation Orchestrator webhook endpoint configured on the rulebook activation.
-    detail: EDA detects infrastructure events (logs, queues, webhooks) and forwards them to AO for analysis, AI triage, and remediation. The trigger uses the same webhook mechanism as external POST callers.
+    description: Starts a workflow when Event-Driven Ansible routes a matching event — from logs, queues, or webhooks — to an automation orchestrator endpoint configured on the rulebook activation, using the same webhook mechanism as external POST callers for AI triage and remediation.
     nexus_source: workflows/add-an-event-driven-ansible-trigger.md
 
   agentic:
     label: AI node
     icon: assets/icons/glossary/ai-node.svg
     category: ai
-    short: Adds LLM reasoning to a workflow. The AI node receives a natural-language prompt, can call enabled tools, and returns structured output that downstream steps reference through expressions.
-    detail: Use AI nodes for unstructured data — logs, tickets, alerts — where fixed rules fall short. The node can summarize, classify, triage incidents, and recommend remediation actions. Pair with approval steps for human oversight.
+    description: Adds LLM reasoning to a workflow — the node receives a natural-language prompt, can call enabled tools, and returns structured output that downstream steps reference through expressions. Use it for unstructured data (logs, tickets, alerts) to summarize, classify, triage, and recommend remediation actions; pair with an approval step for human oversight.
     nexus_source: workflows/understand-workflow-ai-agents.md
 
   mcp_integration:
     label: MCP integration
     icon: assets/icons/glossary/mcp-integration.svg
     category: ai
-    short: Model Context Protocol server tools that AI nodes can call to read or change external systems — inventory, ITSM, vulnerability data, and more.
-    detail: Configure MCP integrations under Integrations so AI agents access live platform data instead of hallucinating context. Agents select which tools to use based on the prompt and tool access policy (all, some, or none).
+    description: Model Context Protocol server tools that AI nodes can call to read or change external systems — inventory, ITSM, vulnerability data, and more. Configure integrations under Integrations so agents work with live platform data instead of hallucinating context, choosing which tools each agent can access.
     nexus_source: workflows/workflow-planning-and-prereqs.md
 
   servicenow_mcp:
     label: ServiceNow MCP
     icon: assets/icons/glossary/servicenow-mcp.svg
     category: ai
-    short: An MCP integration scoped to ServiceNow — lets AI nodes query incidents, update records, and close tickets without custom HTTP glue code.
-    detail: ServiceNow MCP keeps ITSM reads and writes native inside the workflow. Common patterns include triage agents that enrich incidents and resolution agents that update state after remediation completes.
+    description: An MCP integration scoped to ServiceNow that lets AI nodes query incidents, update records, and close tickets without custom HTTP glue code — commonly used by triage agents that enrich incidents and resolution agents that update state after remediation completes.
     nexus_source: workflows/add-action-steps.md
 
   switch:
     label: Switch node
     icon: assets/icons/glossary/switch-node.svg
     category: control_flow
-    short: Evaluates conditions and routes execution to the first matching branch. Supports many named paths plus a fallback when nothing matches — first-match-wins evaluation.
-    detail: Use switch nodes to branch on severity tiers, environment (dev/staging/prod), or AI agent output categories. Unlike a binary conditional, a switch supports up to 100 ordered paths with visual or custom expressions.
+    description: Evaluates conditions and routes execution to the first matching branch, supporting up to 100 ordered paths plus a fallback when nothing matches. Use it to branch on severity tiers, environment (dev/staging/prod), or AI agent output categories where a binary conditional isn't enough.
     nexus_source: workflows/understand-control-flow-steps.md
 
   approval:
     label: Approval node
     icon: assets/icons/glossary/approval-node.svg
     category: approval_cat
-    short: Pauses the branch and creates an approval request. An approver reviews context, approves or rejects, and the workflow continues on the matching path.
-    detail: Place approvals before destructive changes, production modifications, or actions recommended by an AI agent. Configure approver users/groups, a decision window, and fallback behavior if no one responds in time.
+    description: Pauses the branch and creates an approval request; an approver reviews context, approves or rejects, and the workflow continues on the matching path. Place approvals before destructive or production changes, with configurable approver users/groups, a decision window, and fallback behavior if no one responds in time.
     nexus_source: workflows/understand-workflow-approvals.md
 
   conditional:
     label: Conditional node
     icon: assets/icons/glossary/conditional-node.svg
     category: control_flow
-    short: Evaluates one expression and routes to a true or false branch. Use when you need binary branching; use a switch for multiple named paths.
-    detail: Conditional steps share the same expression builder as switch nodes. Leave the false path unconnected to end the branch when the condition is not met.
+    description: Evaluates one expression and routes to a true or false branch, sharing the same expression builder as switch nodes. Use it for simple binary branching, and leave the false path unconnected to end the branch when the condition isn't met.
     nexus_source: workflows/understand-control-flow-steps.md
 
   loop:
     label: Loop node
     icon: assets/icons/glossary/loop-node.svg
     category: control_flow
-    short: Repeats a set of steps for each item in a collection or while a condition is true. Downstream steps inside the loop body access loop variables such as the current item and index.
-    detail: Loops process batches — hosts, tickets, certificates — without duplicating canvas steps. Combine with converge when parallel iterations need to rejoin.
+    description: Repeats a set of steps for each item in a collection or while a condition is true, giving downstream steps access to loop variables such as the current item and index. Ideal for processing batches — hosts, tickets, certificates — without duplicating canvas steps; combine with converge when parallel iterations need to rejoin.
     nexus_source: workflows/understand-control-flow-steps.md
 
   converge:
     label: Converge node
     icon: assets/icons/glossary/converge-node.svg
     category: control_flow
-    short: Joins multiple parallel branches back into a single execution path. Downstream steps wait until all incoming branches complete before proceeding.
-    detail: Place a converge after switch or conditional branches that must rejoin. The converge waits for every connected upstream path to finish, then continues the workflow as a single thread.
+    description: Joins multiple parallel branches back into a single execution path, waiting until every connected upstream branch completes before continuing. Place it after switch or conditional branches that must rejoin so the workflow proceeds as a single thread.
     nexus_source: workflows/understand-control-flow-steps.md
 
   wait:
     label: Wait node
     icon: assets/icons/glossary/wait-node.svg
     category: control_flow
-    short: Pauses workflow execution for a specified duration before continuing to the next step. Use for time-gated operations or rate-limit back-off.
-    detail: Configure a fixed delay (seconds, minutes, hours) or an expression-based duration. Useful between retries, after triggering external processes that need time to complete, or for scheduled follow-ups.
+    description: Pauses workflow execution for a fixed delay or expression-based duration before continuing to the next step. Useful between retries, after triggering external processes that need time to complete, or for scheduled follow-ups.
     nexus_source: workflows/understand-control-flow-steps.md
 
   aap_job_template:
     label: AAP job template
     icon: assets/icons/glossary/aap-execution.svg
     category: aap
-    short: Launches a single Ansible Automation Platform job template from the workflow. The engine polls until the job completes and exposes results to downstream steps.
-    detail: Run one playbook — patch, remediate, notify — with resolved inventory, credentials, limits, and extra vars. The standard bridge between Automation Orchestrator reasoning and AAP execution.
+    description: Launches a single Ansible Automation Platform job template from the workflow, polling until the job completes and exposing results to downstream steps. The standard bridge between automation orchestrator reasoning and AAP execution — one playbook with resolved inventory, credentials, limits, and extra vars.
     nexus_source: workflows/add-aap-job-execution-step.md
 
   aap_job_template_dynamic:
     label: AAP job template (dynamic expression)
     icon: assets/icons/glossary/aap-execution.svg
     category: aap
-    short: Launches an AAP job template selected at runtime via expressions — for example, dragging job_template_name from an upstream AI node instead of picking a fixed template in the dropdown.
-    detail: Toggle Use expressions on the AAP job step to replace organization and job template dropdowns with expression fields. Ideal when AI triage picks the remediation playbook based on incident context.
+    description: Launches an AAP job template selected at runtime via expressions — for example, dragging job_template_name from an upstream AI node — by toggling Use expressions to replace the organization and job template dropdowns with expression fields. Ideal when AI triage picks the remediation playbook based on incident context.
     nexus_source: workflows/add-aap-job-execution-step.md
 
   aap_workflow_template:
     label: AAP workflow template
     icon: assets/icons/glossary/aap-execution.svg
     category: aap
-    short: Launches an entire AAP workflow job template — a multi-job pipeline already defined in Ansible Automation Platform with its own conditionals and convergence.
-    detail: Use when remediation spans multiple coordinated job templates inside AAP. Can also be selected dynamically with expressions when an agent recommends a workflow rather than a single job.
+    description: Launches an entire AAP workflow job template — a multi-job pipeline already defined in Ansible Automation Platform with its own conditionals and convergence. Use when remediation spans multiple coordinated job templates, or select it dynamically with expressions when an agent recommends a workflow rather than a single job.
     nexus_source: workflows/understand-aap-execution-steps.md
 
   script:
     label: Script node
     icon: assets/icons/glossary/script-node.svg
     category: actions
-    short: Runs JavaScript in the workflow engine to parse, transform, or reshape data between steps — for example, normalizing an API response before an agent or AAP job consumes it.
-    detail: Script steps are ideal for lightweight data manipulation without deploying a playbook. Test them in the builder with mock upstream output before publishing the workflow.
+    description: Runs JavaScript in the workflow engine to parse, transform, or reshape data between steps — for example, normalizing an API response before an agent or AAP job consumes it. Ideal for lightweight data manipulation without deploying a playbook; test with mock upstream output in the builder before publishing.
     nexus_source: workflows/understand-testing-deploying-workflows.md
 
   http_request:
     label: HTTP request
     icon: assets/icons/glossary/http-request.svg
     category: actions
-    short: Calls an external HTTP API from the workflow. Response status and body become available to downstream steps through the expression system.
-    detail: Use HTTP request steps to integrate REST endpoints that are not exposed through MCP tools. Verify endpoints before test runs — step testing sends real network requests.
+    description: Calls an external HTTP API from the workflow, with the response status and body available to downstream steps through the expression system. Use it to integrate REST endpoints that aren't exposed through MCP tools — verify endpoints first, since step testing sends real network requests.
     nexus_source: workflows/understand-testing-deploying-workflows.md

@@ -15,13 +15,6 @@ ao_glossary_page: true
   </p>
 </div>
 
-<nav class="glossary-jump" aria-label="Glossary categories">
-  {% for cat_id in glossary.category_order %}
-    {% assign cat = categories[cat_id] %}
-    <a href="#glossary-{{ cat_id }}" class="glossary-jump__link">{{ cat.label }}</a>
-  {% endfor %}
-</nav>
-
 {% for cat_id in glossary.category_order %}
   {% assign cat = categories[cat_id] %}
   <section class="glossary-section detail-section" id="glossary-{{ cat_id }}">
@@ -43,29 +36,28 @@ ao_glossary_page: true
           {% else %}
           <div class="glossary-card" data-category="{{ term.category }}" id="{{ term_key }}">
           {% endif %}
-            {% if term.icon %}
-              {% if term.icon contains 'eda-trigger' or term.icon contains 'aap-execution' %}
-                {% assign icon_modifier = "glossary-card__icon--logo" %}
-              {% else %}
-                {% assign icon_modifier = "glossary-card__icon--mono" %}
+            <div class="glossary-card__header">
+              {% if term.icon %}
+                {% if term.icon contains 'eda-trigger' or term.icon contains 'aap-execution' %}
+                  {% assign icon_modifier = "glossary-card__icon--logo" %}
+                {% else %}
+                  {% assign icon_modifier = "glossary-card__icon--mono" %}
+                {% endif %}
+                <div class="glossary-card__icon-wrap">
+                  <img
+                    src="{{ term.icon | relative_url }}"
+                    alt=""
+                    class="glossary-card__icon {{ icon_modifier }}"
+                    width="40"
+                    height="40"
+                    loading="lazy"
+                    decoding="async"
+                  >
+                </div>
               {% endif %}
-              <div class="glossary-card__icon-wrap">
-                <img
-                  src="{{ term.icon | relative_url }}"
-                  alt=""
-                  class="glossary-card__icon {{ icon_modifier }}"
-                  width="40"
-                  height="40"
-                  loading="lazy"
-                  decoding="async"
-                >
-              </div>
-            {% endif %}
-            <h3 class="glossary-card__title">{{ term.label }}</h3>
-            <p class="glossary-card__short">{{ term.short }}</p>
-            {% if term.detail and term.detail != term.short %}
-              <p class="glossary-card__detail">{{ term.detail }}</p>
-            {% endif %}
+              <h3 class="glossary-card__title">{{ term.label }}</h3>
+            </div>
+            <p class="glossary-card__description">{{ term.description }}</p>
             {% if demo_count > 0 %}
               <span class="glossary-card__demos-link">View demos →</span>
             {% endif %}

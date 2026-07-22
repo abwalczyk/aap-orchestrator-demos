@@ -1,0 +1,9 @@
+{% assign glossary = site.data.ao_glossary %}
+
+<nav class="demo-toc" aria-label="On this page">
+  <p class="nav-heading">On this page</p>
+  {% for cat_id in glossary.category_order %}
+    {% assign cat = glossary.categories[cat_id] %}
+    <a href="#glossary-{{ cat_id }}" class="demo-toc__link">{{ cat.label }}</a>
+  {% endfor %}
+</nav>
