@@ -173,9 +173,30 @@ Use an instance role, access keys in a credential, or AAP cloud credential — m
 
 ## AWS credentials: laptop vs. AAP
 
-`setup_sqs_queue.yml` and `publish_unknown_issue_event.yml` are the two playbooks you'd run manually (setup once, publish to smoke-test). Both default `aws_profile` to your local `saml` SSO profile for convenience on a laptop — that session expires periodically (Kerberos ticket + SAML token), so if you hit `ProfileNotFound` or `ExpiredToken`, re-run your normal AWS SSO login (e.g. `kinit`, then `aws-saml.py`) and retry.
+`setup_sqs_queue.yml` and `publish_unknown_issue_event.yml` are the two playbooks you'd run manually (setup once, publish to smoke-test) — but they also work unmodified as AAP job templates. Both auto-detect which credential to use:
 
-If either playbook is ever run **on AAP** (job template with an AWS credential attached), pass `-e aws_profile=""` so the scripts skip profile lookup entirely and fall back to the credentials AAP injects (access key/secret or instance role) — no laptop session involved, and nothing expires.
+- **AAP job template with an AWS credential attached** — the credential injects `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` into the job's environment. The playbooks detect that automatically and use it, ignoring the `saml` default entirely. No extra vars needed.
+- **Local laptop, no AWS credential in the environment** — falls back to your `saml` SSO profile.
+
+You don't need to pass `aws_profile` as an extra var in either case; it "just works" based on what's actually available.
+
+### Local re-login (laptop)
+
+The `saml` session expires periodically (Kerberos ticket + SAML token), so if a local run fails with `ProfileNotFound` or `ExpiredToken`, refresh it and retry:
+
+```bash
+# 1. Make sure you're on VPN (needed to reach the Kerberos KDC)
+# 2. Get a fresh Kerberos ticket
+kinit yourid@REDHAT.COM
+
+# 3. Refresh the AWS SAML session into the "saml" profile
+aws-saml.py --target-profile saml
+
+# 4. Retry the playbook
+ansible-playbook -i inventory/hosts.yml playbooks/publish_unknown_issue_event.yml
+```
+
+Check `klist` first if you're not sure whether you already have a valid ticket — `Cache not found` means you need to `kinit` again.
 
 ## Next steps
 
