@@ -143,7 +143,7 @@ Summary:
    - **`Linux - Post AO Webhook`** → `event-driven-xsos-rca/playbooks/post_ao_webhook.yml` (called by EDA)
    - **`Linux - Run xSOS Analysis`** → `event-driven-xsos-rca/playbooks/run_xsos_analysis.yml` (called by AO workflow)
    - **`Linux - Gather Host Facts`** → `event-driven-xsos-rca/playbooks/gather_host_facts.yml` (called by AO workflow, in parallel with the xSOS node — same inventory/credential as xSOS)
-   - **`Linux - Notify RCA Chatroom`** → `event-driven-xsos-rca/playbooks/notify_chatroom.yml` (called by AO workflow, after the AI reasoning node — needs `api_chat_token` on the Mattermost credential, same as the disk-utilization demo's Notify Chatroom template)
+   - **`Linux - Notify RCA Chatroom`** → `event-driven-xsos-rca/playbooks/notify_chatroom.yml` (called by AO workflow, after the AI reasoning node — needs `api_chat_token` on the Mattermost credential, same as the disk-utilization demo's Notify Chatroom template). Use an execution environment with the `community.general` collection (e.g. the `Rhel` EE); the default supported EE doesn't ship it and the `mattermost` module will fail to resolve.
 3. Create an AO workflow with an **EDA webhook trigger**; copy the webhook URL into activation extra vars
 4. Fan the webhook trigger out to **Run xSOS Analysis** and **Gather Host Facts** in parallel, join both into a **Task Agent (AI)** node prompted to summarize host health from the published artifacts, then route its output as `ai_summary` into **Notify RCA Chatroom**
 5. Create a rulebook activation with **AAP Controller credential**, **AWS SQS credential**, and extra vars:
