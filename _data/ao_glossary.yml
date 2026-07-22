@@ -12,17 +12,21 @@ categories:
   control_flow:
     label: Logic
     order: 3
+  approval_cat:
+    label: Approval
+    order: 4
   aap:
     label: AAP execution
-    order: 4
+    order: 5
   actions:
     label: Action steps
-    order: 5
+    order: 6
 
 category_order:
   - triggers
   - ai
   - control_flow
+  - approval_cat
   - aap
   - actions
 
@@ -99,7 +103,7 @@ terms:
   approval:
     label: Approval node
     icon: assets/icons/glossary/approval-node.svg
-    category: control_flow
+    category: approval_cat
     short: Pauses the branch and creates an approval request. An approver reviews context, approves or rejects, and the workflow continues on the matching path.
     detail: Place approvals before destructive changes, production modifications, or actions recommended by an AI agent. Configure approver users/groups, a decision window, and fallback behavior if no one responds in time.
     nexus_source: workflows/understand-workflow-approvals.md

@@ -38,7 +38,11 @@ ao_glossary_page: true
               {% assign demo_count = demo_count | plus: 1 %}
             {% endif %}
           {% endfor %}
-          <article class="glossary-card" data-category="{{ term.category }}" id="{{ term_key }}">
+          {% if demo_count > 0 %}
+          <a href="{{ '/' | relative_url }}#block-{{ term_key }}" class="glossary-card glossary-card--linked" data-category="{{ term.category }}" id="{{ term_key }}">
+          {% else %}
+          <div class="glossary-card" data-category="{{ term.category }}" id="{{ term_key }}">
+          {% endif %}
             {% if term.icon %}
               {% if term.icon contains 'eda-trigger' or term.icon contains 'aap-execution' %}
                 {% assign icon_modifier = "glossary-card__icon--logo" %}
@@ -57,21 +61,19 @@ ao_glossary_page: true
                 >
               </div>
             {% endif %}
-            {% if demo_count > 0 %}
-              <h3 class="glossary-card__title">
-                <a href="{{ '/' | relative_url }}#block-{{ term_key }}" class="glossary-card__title-link">{{ term.label }}</a>
-              </h3>
-            {% else %}
-              <h3 class="glossary-card__title">{{ term.label }}</h3>
-            {% endif %}
+            <h3 class="glossary-card__title">{{ term.label }}</h3>
             <p class="glossary-card__short">{{ term.short }}</p>
             {% if term.detail and term.detail != term.short %}
               <p class="glossary-card__detail">{{ term.detail }}</p>
             {% endif %}
             {% if demo_count > 0 %}
-              <a href="{{ '/' | relative_url }}#block-{{ term_key }}" class="glossary-card__demos-link">View demos using this block</a>
+              <span class="glossary-card__demos-link">View demos →</span>
             {% endif %}
-          </article>
+          {% if demo_count > 0 %}
+          </a>
+          {% else %}
+          </div>
+          {% endif %}
         {% endif %}
       {% endfor %}
     </div>
