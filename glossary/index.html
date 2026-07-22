@@ -38,7 +38,7 @@ ao_glossary_page: true
               {% assign demo_count = demo_count | plus: 1 %}
             {% endif %}
           {% endfor %}
-          <article class="glossary-card" id="{{ term_key }}">
+          <article class="glossary-card" data-category="{{ term.category }}" id="{{ term_key }}">
             {% if term.icon %}
               {% if term.icon contains 'eda-trigger' or term.icon contains 'aap-execution' %}
                 {% assign icon_modifier = "glossary-card__icon--logo" %}

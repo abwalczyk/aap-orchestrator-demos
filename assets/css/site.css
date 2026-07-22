@@ -837,10 +837,18 @@ button.ao-block:focus-visible {
   border-radius: 12px;
   background: #151018;
   border: 1px solid #3a2a4a;
+  border-top: 3px solid #3a2a4a;
   scroll-margin-top: 24px;
   display: flex;
   flex-direction: column;
 }
+
+.glossary-card[data-category="triggers"] { border-top-color: #a0a0a0; }
+.glossary-card[data-category="ai"] { border-top-color: #92C5F9; }
+.glossary-card[data-category="control_flow"] { border-top-color: #F89B78; }
+.glossary-card#approval { border-top-color: #9AD8D8; }
+.glossary-card[data-category="aap"] { border-top-color: #E0E0E0; }
+.glossary-card[data-category="actions"] { border-top-color: #B6A6E9; }
 
 .glossary-card:target {
   border-color: #7c3aed;
@@ -855,24 +863,65 @@ button.ao-block:focus-visible {
   height: 44px;
   margin-bottom: 14px;
   border-radius: 10px;
-  background: rgba(124, 58, 237, 0.13);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .glossary-card__icon {
   display: block;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
 .glossary-card__icon--mono {
-  filter: brightness(0) invert(0.9);
+  filter: brightness(0) invert(0.85);
 }
 
 .glossary-card__icon--logo {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 6px;
+}
+
+/* Category accent colors — matching AO product canvas node colors */
+.glossary-card[data-category="triggers"] .glossary-card__icon-wrap {
+  background: rgba(160, 160, 160, 0.15);
+}
+.glossary-card[data-category="triggers"] .glossary-card__icon--mono {
+  filter: none;
+  opacity: 0.8;
+}
+
+.glossary-card[data-category="ai"] .glossary-card__icon-wrap {
+  background: rgba(146, 197, 249, 0.15);
+}
+.glossary-card[data-category="ai"] .glossary-card__icon--mono {
+  filter: brightness(0) saturate(100%) invert(76%) sepia(30%) saturate(600%) hue-rotate(180deg);
+}
+
+.glossary-card[data-category="control_flow"] .glossary-card__icon-wrap {
+  background: rgba(248, 155, 120, 0.15);
+}
+.glossary-card[data-category="control_flow"] .glossary-card__icon--mono {
+  filter: brightness(0) saturate(100%) invert(72%) sepia(40%) saturate(500%) hue-rotate(330deg);
+}
+
+.glossary-card#approval .glossary-card__icon-wrap {
+  background: rgba(154, 216, 216, 0.15);
+}
+.glossary-card#approval .glossary-card__icon--mono {
+  filter: brightness(0) saturate(100%) invert(82%) sepia(20%) saturate(500%) hue-rotate(130deg);
+}
+
+.glossary-card[data-category="aap"] .glossary-card__icon-wrap {
+  background: rgba(224, 224, 224, 0.12);
+}
+
+.glossary-card[data-category="actions"] .glossary-card__icon-wrap {
+  background: rgba(182, 166, 233, 0.15);
+}
+.glossary-card[data-category="actions"] .glossary-card__icon--mono {
+  filter: brightness(0) saturate(100%) invert(72%) sepia(20%) saturate(800%) hue-rotate(220deg);
 }
 
 .glossary-card__title {

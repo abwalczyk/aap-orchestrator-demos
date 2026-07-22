@@ -120,6 +120,22 @@ terms:
     detail: Loops process batches — hosts, tickets, certificates — without duplicating canvas steps. Combine with converge when parallel iterations need to rejoin.
     nexus_source: workflows/understand-control-flow-steps.md
 
+  converge:
+    label: Converge node
+    icon: assets/icons/glossary/converge-node.svg
+    category: control_flow
+    short: Joins multiple parallel branches back into a single execution path. Downstream steps wait until all incoming branches complete before proceeding.
+    detail: Place a converge after switch or conditional branches that must rejoin. The converge waits for every connected upstream path to finish, then continues the workflow as a single thread.
+    nexus_source: workflows/understand-control-flow-steps.md
+
+  wait:
+    label: Wait node
+    icon: assets/icons/glossary/wait-node.svg
+    category: control_flow
+    short: Pauses workflow execution for a specified duration before continuing to the next step. Use for time-gated operations or rate-limit back-off.
+    detail: Configure a fixed delay (seconds, minutes, hours) or an expression-based duration. Useful between retries, after triggering external processes that need time to complete, or for scheduled follow-ups.
+    nexus_source: workflows/understand-control-flow-steps.md
+
   aap_job_template:
     label: AAP job template
     icon: assets/icons/glossary/aap-execution.svg
