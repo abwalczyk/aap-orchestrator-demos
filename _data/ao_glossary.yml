@@ -52,6 +52,14 @@ terms:
     detail: A manual trigger is the simplest entry point for workflows you run on demand — demos, break-glass remediation, or operator-initiated changes. Runs appear in history with the triggering user as the source.
     nexus_source: workflows/add-a-manual-trigger.md
 
+  schedule_trigger:
+    label: Schedule trigger
+    icon: assets/icons/glossary/schedule-trigger.svg
+    category: triggers
+    short: Starts a workflow automatically on a recurring schedule — for example, nightly, hourly, or a custom cron expression.
+    detail: Use schedule triggers for recurring housekeeping — certificate renewal checks, drift detection, report generation — without a human or external system kicking off the run. Configure the cadence and time zone when you add the trigger.
+    nexus_source: workflows/add-a-schedule-trigger.md
+
   webhook_trigger:
     label: Webhook trigger
     icon: assets/icons/glossary/webhook-trigger.svg
