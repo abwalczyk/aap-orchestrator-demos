@@ -1,20 +1,11 @@
 iterations: 3
 
 models:
-  # Frontier models (via API keys)
   - name: claude-sonnet-4-6
     provider: anthropic
-  - name: gpt-4o
-    provider: openai
   - name: gemini-2.5-pro
     provider: google
-
-  # Open-source models (via LiteMaaS, $0 cost)
-  - name: Qwen3.6-35B-A3B
-    provider: litemaas
-  - name: Qwen2.5-VL-7B-Instruct
-    provider: litemaas
-  - name: Granite-Vision-3.2
+  - name: openai/granite-3-2-8b-instruct
     provider: litemaas
 
 workflows:
@@ -84,8 +75,8 @@ workflows:
   #       ground_truth: ground_truth/ssh_key_rotation/step2_plan.json
 
 judges:
-  default_model: "openai:/Qwen3.6-35B-A3B"
-  anthropic_model: "openai:/Qwen3.6-35B-A3B"
+  default_model: "openai:/claude-sonnet-4-6"
+  anthropic_model: "openai:/gemini-2.5-pro"
 
 mlflow:
-  experiment_name: atrotter-testing
+  experiment_prefix: atrotter-testing

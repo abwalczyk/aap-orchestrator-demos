@@ -163,5 +163,48 @@ class AOClient:
 
             time.sleep(poll_interval)
 
+    def run_workflow(
+        self,
+        workflow_id: str,
+        input_data: dict,
+        mode: str = "test",
+    ) -> dict:
+        """Run a full workflow execution (all nodes).
+
+        Returns the execution response with an ID that can be polled.
+        """
+        body = {
+            "workflow_id": workflow_id,
+            "input_data": input_data,
+            "mode": mode,
+        }
+        start = time.monotonic()
+        resp = self._request("POST", "/api/v1/executions", json=body)
+        latency_ms = (time.monotonic() - start) * 1000
+        result = resp.json()
+        result["_latency_ms"] = latency_ms
+        return result
+
+    def swap_all_agentic_models(
+        self,
+        workflow_id: str,
+        model_name: str,
+    ) -> dict:
+        """Set every agentic node in a workflow to the same model.
+
+        Returns the original workflow definition for restoration.
+        """
+        workflow = self.get_workflow(workflow_id)
+        original_definition = copy.deepcopy(workflow["version"]["workflow_definition"])
+
+        definition = workflow["version"]["workflow_definition"]
+        for node in definition.get("nodes", []):
+            if node.get("type") == "agentic":
+                node.setdefault("config", {})["model"] = model_name
+
+        self._request("PATCH", f"/api/v1/workflows/{workflow_id}",
+                       json={"workflow_definition": definition})
+        return original_definition
+
     def close(self):
         self.client.close()

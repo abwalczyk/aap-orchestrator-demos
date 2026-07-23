@@ -4,17 +4,18 @@
   },
   "pre_resolved_nodes": {
     "classifier": {
-      "result": {
+      "output": {
         "content": {
           "category": "feature_request",
           "confidence": "high",
           "reasoning": "The user is requesting a new capability to be added"
         }
-      }
+      },
+      "control": null
     },
     "route_by_category": {
-      "status": "completed",
-      "matched_port": "case_1"
+      "output": {},
+      "control": {"next_port": "case_1"}
     }
   },
   "expected_output": {

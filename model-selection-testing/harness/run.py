@@ -1,14 +1,17 @@
 """AO Model Evaluation Harness.
 
-Two modes:
-  1. Model sweep: hold prompt constant, swap models, score each.
+Three modes:
+  1. Model sweep: hold prompt constant, swap models on one node, score each.
   2. Prompt sweep: hold model constant, swap prompts from MLflow Prompt Registry.
+  3. Workflow sweep: run full workflow end-to-end, swap models on all agentic nodes.
 
 Usage:
     python3 run.py model-sweep --workflow ticket_classifier --step classify_bug
-    python3 run.py model-sweep --workflow ticket_classifier --step classify_bug --model Qwen3.6-35B-A3B
+    python3 run.py model-sweep --workflow ticket_classifier --step classify_bug --model claude-sonnet-4-6
     python3 run.py model-sweep --workflow ticket_classifier --step classify_bug --skip-judges
     python3 run.py prompt-sweep --workflow ticket_classifier --step classify_bug --prompt-name my_prompt
+    python3 run.py workflow-sweep --workflow ticket_classifier
+    python3 run.py workflow-sweep --workflow ticket_classifier --model claude-sonnet-4-6 --iterations 1
 """
 
 import argparse
@@ -68,11 +71,19 @@ def setup(config_path: str) -> tuple:
 
     mlflow_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001")
     mlflow.set_tracking_uri(mlflow_uri)
-    experiment_name = config.get("mlflow", {}).get("experiment_name", "ao-model-comparison")
-    mlflow.set_experiment(experiment_name)
-    print(f"MLflow tracking: {mlflow_uri} (experiment: {experiment_name})")
+    print(f"MLflow tracking: {mlflow_uri}")
 
     return config, ao
+
+
+def resolve_workflow(config: dict, workflow_name: str) -> dict:
+    """Look up a workflow by name from config. Returns the workflow dict."""
+    for w in config["workflows"]:
+        if w["name"] == workflow_name:
+            return w
+    print(f"Error: workflow '{workflow_name}' not found in config")
+    print(f"Available: {[w['name'] for w in config['workflows']]}")
+    sys.exit(1)
 
 
 def resolve_step(config: dict, workflow_name: str, step_name: str) -> tuple:
@@ -167,6 +178,11 @@ def log_to_mlflow(rows: list, run_name: str, params: dict, scorers: list,
         for k, v in params.items():
             mlflow.log_param(k, v)
 
+        tag_keys = {"model", "provider", "step", "mode"}
+        for k in tag_keys:
+            if k in params:
+                mlflow.set_tag(k, params[k])
+
         latencies = [r["inputs"]["latency_ms"] for r in rows]
         error_count = sum(1 for r in rows if "error" in r["outputs"])
         mlflow.log_metric("avg_latency_ms", sum(latencies) / len(latencies))
@@ -182,7 +198,17 @@ def log_to_mlflow(rows: list, run_name: str, params: dict, scorers: list,
         if ground_truth:
             mlflow.log_text(json.dumps(ground_truth, indent=2), "ground_truth.json")
 
+        run_id = mlflow.active_run().info.run_id
         genai_evaluate(data=rows, scorers=scorers)
+
+        traces = mlflow.search_traces(
+            run_id=run_id, return_type="list", include_spans=False
+        )
+        trace_tags = {k: v for k, v in params.items()
+                      if k in ("model", "provider", "step", "mode", "node_id")}
+        for t in traces:
+            for tk, tv in trace_tags.items():
+                mlflow.set_trace_tag(t.info.trace_id, tk, str(tv))
 
 
 def get_node_prompt(ao: AOClient, workflow_id: str, node_id: str) -> str:
@@ -208,6 +234,12 @@ def model_sweep(args):
 
     workflow, step = resolve_step(config, args.workflow, args.step)
     print(f"\nWorkflow: {workflow['name']}, Step: {step['name']} ({step['node_id']})")
+
+    prefix = config.get("mlflow", {}).get("experiment_prefix", "ao-eval")
+    experiment_path = f"{prefix}/{workflow['name']}/{step['node_id']}"
+    mlflow.set_experiment(experiment_path)
+    mlflow.set_experiment_tag("workflow_type", workflow["name"])
+    print(f"MLflow experiment: {experiment_path}")
 
     gt_path = gt_base / step["ground_truth"]
     if not gt_path.exists():
@@ -296,6 +328,12 @@ def prompt_sweep(args):
 
     workflow, step = resolve_step(config, args.workflow, args.step)
     print(f"\nWorkflow: {workflow['name']}, Step: {step['name']} ({step['node_id']})")
+
+    prefix = config.get("mlflow", {}).get("experiment_prefix", "ao-eval")
+    experiment_path = f"{prefix}/{workflow['name']}/{step['node_id']}"
+    mlflow.set_experiment(experiment_path)
+    mlflow.set_experiment_tag("workflow_type", workflow["name"])
+    print(f"MLflow experiment: {experiment_path}")
 
     gt_path = gt_base / step["ground_truth"]
     if not gt_path.exists():
@@ -424,6 +462,151 @@ def prompt_sweep(args):
 
 
 # ---------------------------------------------------------------------------
+# Mode 3: Workflow Sweep
+# ---------------------------------------------------------------------------
+
+def workflow_sweep(args):
+    """Run the full workflow end-to-end, swap models across all agentic nodes."""
+    config, ao = setup(args.config)
+    iterations = args.iterations or config.get("iterations", 3)
+    judge_config = config.get("judges", {})
+    gt_base = Path(__file__).parent.parent
+    prefix = config.get("mlflow", {}).get("experiment_prefix", "ao-eval")
+
+    workflow = resolve_workflow(config, args.workflow)
+    print(f"\nWorkflow: {workflow['name']} (full workflow sweep)")
+
+    steps_by_node = {}
+    ground_truths = {}
+    for step in workflow["steps"]:
+        node_id = step["node_id"]
+        if node_id not in steps_by_node:
+            steps_by_node[node_id] = []
+        steps_by_node[node_id].append(step)
+
+        gt_path = gt_base / step["ground_truth"]
+        if gt_path.exists():
+            ground_truths[step["name"]] = load_ground_truth(gt_path)
+
+    trigger_inputs = {}
+    for step in workflow["steps"]:
+        gt = ground_truths.get(step["name"], {})
+        if gt.get("trigger_inputs"):
+            trigger_inputs = gt["trigger_inputs"]
+            break
+
+    models = config["models"]
+    if args.model != "all":
+        models = [m for m in models if m["name"] == args.model]
+        if not models:
+            print(f"Error: model '{args.model}' not found in config")
+            print(f"Available: {[m['name'] for m in config['models']]}")
+            sys.exit(1)
+
+    print(f"Testing {len(models)} model(s), {iterations} iteration(s) each")
+    print(f"Trigger input: {json.dumps(trigger_inputs)[:100]}\n")
+
+    try:
+        for model in models:
+            print(f"  Model: {model['name']} ({model['provider']})")
+
+            try:
+                original_def = ao.swap_all_agentic_models(
+                    workflow["workflow_id"], model["name"]
+                )
+                print(f"  Swapped all agentic nodes to {model['name']}")
+            except Exception as e:
+                print(f"  Failed to swap models: {e}")
+                continue
+
+            try:
+                for i in range(iterations):
+                    print(f"    Iteration {i + 1}/{iterations}...", flush=True)
+
+                    try:
+                        response = ao.run_workflow(
+                            workflow["workflow_id"], trigger_inputs
+                        )
+                        execution = ao.poll_execution(response["id"])
+                        wall_clock = execution.get("_wall_clock_ms", 0)
+                        print(f"    Workflow completed in {wall_clock:.0f}ms")
+                    except Exception as e:
+                        print(f"    Workflow execution failed: {e}")
+                        continue
+
+                    for activity in execution.get("activities", []):
+                        node_id = activity.get("activity_id")
+                        status = activity.get("status")
+
+                        if node_id not in steps_by_node:
+                            continue
+                        if status == "skipped":
+                            print(f"      {node_id}: skipped (not on active path)")
+                            continue
+                        if status != "completed":
+                            print(f"      {node_id}: {status}")
+                            continue
+
+                        step = steps_by_node[node_id][0]
+                        gt = ground_truths.get(step["name"], {})
+                        output = extract_output(activity.get("output_data", {}))
+
+                        result = {
+                            "output": output,
+                            "latency_ms": wall_clock,
+                            "status": status,
+                        }
+                        rows = build_rows(
+                            [result], step, workflow["name"],
+                            model["name"], model["provider"], gt,
+                        )
+
+                        experiment_path = f"{prefix}/{workflow['name']}/{node_id}"
+                        mlflow.set_experiment(experiment_path)
+                        mlflow.set_experiment_tag("workflow_type", workflow["name"])
+
+                        scorers = build_programmatic_scorers()
+                        if not args.skip_judges:
+                            scorers.extend(
+                                build_llm_judges(judge_config, model["provider"])
+                            )
+
+                        node_prompt = get_node_prompt(
+                            ao, workflow["workflow_id"], node_id
+                        )
+                        run_name = (
+                            f"{workflow['name']}/{step['name']}/{model['name']}"
+                        )
+
+                        try:
+                            log_to_mlflow(
+                                rows, run_name,
+                                params={
+                                    "mode": "workflow_sweep",
+                                    "workflow": workflow["name"],
+                                    "step": step["name"],
+                                    "node_id": node_id,
+                                    "model": model["name"],
+                                    "provider": model["provider"],
+                                    "iterations": 1,
+                                },
+                                scorers=scorers,
+                                node_prompt=node_prompt,
+                                ground_truth=gt,
+                            )
+                            print(f"      {node_id}: logged to MLflow")
+                        except Exception as e:
+                            print(f"      {node_id}: MLflow logging failed: {e}")
+            finally:
+                ao.restore_workflow(workflow["workflow_id"], original_def)
+                print(f"  Restored original workflow\n")
+    finally:
+        ao.close()
+
+    print("Done. View results in MLflow.")
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -431,7 +614,7 @@ def main():
     parser = argparse.ArgumentParser(description="AO Model Evaluation Harness")
     subparsers = parser.add_subparsers(dest="mode", required=True)
 
-    # Shared arguments
+    # Shared arguments for node-level modes (model-sweep, prompt-sweep)
     shared = argparse.ArgumentParser(add_help=False)
     shared.add_argument("--workflow", required=True, help="Workflow name from config")
     shared.add_argument("--step", required=True, help="Step name within the workflow")
@@ -440,6 +623,17 @@ def main():
     shared.add_argument("--skip-judges", action="store_true",
                         help="Skip LLM judges, run programmatic scorers only")
     shared.add_argument("--config", default="config.yaml")
+
+    # Shared arguments for workflow-level modes (no --step)
+    shared_workflow = argparse.ArgumentParser(add_help=False)
+    shared_workflow.add_argument("--workflow", required=True,
+                                 help="Workflow name from config")
+    shared_workflow.add_argument("--model", default="all",
+                                 help="Model name or 'all'")
+    shared_workflow.add_argument("--iterations", type=int, default=None)
+    shared_workflow.add_argument("--skip-judges", action="store_true",
+                                 help="Skip LLM judges, run programmatic scorers only")
+    shared_workflow.add_argument("--config", default="config.yaml")
 
     # Model sweep
     subparsers.add_parser("model-sweep", parents=[shared],
@@ -451,12 +645,18 @@ def main():
     ps.add_argument("--prompt-name", required=True,
                     help="Name of the prompt in MLflow Prompt Registry")
 
+    # Workflow sweep
+    subparsers.add_parser("workflow-sweep", parents=[shared_workflow],
+                          help="Run full workflow end-to-end, swap models on all nodes")
+
     args = parser.parse_args()
 
     if args.mode == "model-sweep":
         model_sweep(args)
     elif args.mode == "prompt-sweep":
         prompt_sweep(args)
+    elif args.mode == "workflow-sweep":
+        workflow_sweep(args)
 
 
 if __name__ == "__main__":

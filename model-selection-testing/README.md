@@ -10,9 +10,9 @@ The harness has three jobs:
 2. **Scores the response** using programmatic checks and LLM judges
 3. **Logs results to MLflow** so you can compare models side by side
 
-## Two Modes
+## Three Modes
 
-**Model sweep**: Hold the prompt constant, swap models. Tests how different LLMs perform on the same task.
+**Model sweep**: Hold the prompt constant, swap models on one node. Tests how different LLMs perform on the same task in isolation.
 
 ```bash
 python3 run.py model-sweep --workflow ticket_classifier --step classify_bug
@@ -23,6 +23,15 @@ python3 run.py model-sweep --workflow ticket_classifier --step classify_bug
 ```bash
 python3 run.py prompt-sweep --workflow ticket_classifier --step classify_bug --prompt-name my_prompt
 ```
+
+**Workflow sweep**: Run the full workflow end-to-end, swapping models across all agentic nodes at once. Tests how a model performs when the entire pipeline runs together (no mocked upstream data). Each node's output is scored and logged to its own MLflow experiment, just like model-sweep.
+
+```bash
+python3 run.py workflow-sweep --workflow ticket_classifier
+python3 run.py workflow-sweep --workflow ticket_classifier --model claude-sonnet-4-6 --iterations 1
+```
+
+Nodes that are skipped during execution (e.g. `feature_responder` when the ticket is classified as a bug) are not scored.
 
 ## Project Structure
 
@@ -50,9 +59,11 @@ Handles all communication with AO's REST API. Six methods:
 
 - `login()` authenticates and stores a JWT token
 - `get_workflow()` fetches a workflow definition by UUID
-- `swap_model()` changes which LLM an agent node uses (returns the original so it can be restored)
+- `swap_model()` changes which LLM a single agent node uses (returns the original so it can be restored)
+- `swap_all_agentic_models()` changes the model on every agentic node in a workflow at once
 - `swap_prompt()` changes an agent node's system prompt (same pattern as swap_model)
-- `test_node()` fires a per-step test via `POST /api/v1/workflows/{id}/test` and measures latency
+- `test_node()` fires a per-node test via `POST /api/v1/workflows/{id}/test` and measures latency
+- `run_workflow()` executes the full workflow via `POST /api/v1/executions` (all nodes run in sequence)
 - `restore_workflow()` puts the workflow back to its original state after testing
 
 ### scorers.py
@@ -91,7 +102,7 @@ The orchestrator. Here's what each function does:
 
 ### config.yaml
 
-Lists which models to test, which workflows/steps exist (with workflow IDs, node IDs, and ground truth file paths), which LLM to use as the judge, and the MLflow experiment name.
+Lists which models to test, which workflows/steps exist (with workflow IDs, node IDs, and ground truth file paths), which LLM to use as the judge, and the MLflow experiment prefix.
 
 ### ground_truth/
 
@@ -102,7 +113,7 @@ JSON files that define the test cases. Each file contains:
 
 ## Call Flow
 
-Here's what happens when you run a model sweep:
+**Model sweep** (node-by-node):
 
 ```
 main()
@@ -120,7 +131,25 @@ main()
     > ao.restore_workflow()   # put the original model back
 ```
 
-This repeats for each model and each iteration.
+**Workflow sweep** (full end-to-end):
+
+```
+main()
+  > workflow_sweep()
+    > setup()                          # connect to AO + MLflow
+    > resolve_workflow()               # find the workflow in config
+    > load all ground truth files      # load expected outputs for every step
+    > ao.swap_all_agentic_models()     # set all agentic nodes to one model
+    > ao.run_workflow()                # execute the full workflow
+    > ao.poll_execution()              # wait for completion
+    > for each completed activity:     # iterate over node outputs
+        > extract_output()             # parse the JSON response
+        > build_rows()                 # format for MLflow
+        > log_to_mlflow()              # log to node-specific experiment
+    > ao.restore_workflow()            # put original models back
+```
+
+Both modes repeat for each model and each iteration.
 
 ## Setup
 
@@ -148,17 +177,17 @@ cd harness
 source ../venv/bin/activate
 ```
 
-### Model sweep (compare models)
+### Model sweep (compare models on one node)
 
 ```bash
 # Test all models on one step, 3 iterations each, with all judges
 python3 run.py model-sweep --workflow ticket_classifier --step classify_bug
 
 # Test one specific model
-python3 run.py model-sweep --workflow ticket_classifier --step classify_bug --model Qwen3.6-35B-A3B
+python3 run.py model-sweep --workflow ticket_classifier --step classify_bug --model claude-sonnet-4-6
 
 # Quick test, no LLM judges (programmatic scorers only)
-python3 run.py model-sweep --workflow ticket_classifier --step classify_bug --model Qwen3.6-35B-A3B --iterations 1 --skip-judges
+python3 run.py model-sweep --workflow ticket_classifier --step classify_bug --model claude-sonnet-4-6 --iterations 1 --skip-judges
 ```
 
 ### Prompt sweep (compare prompts)
@@ -168,12 +197,22 @@ python3 run.py model-sweep --workflow ticket_classifier --step classify_bug --mo
 python3 run.py prompt-sweep --workflow ticket_classifier --step classify_bug --prompt-name my_classifier_prompt
 ```
 
+### Workflow sweep (compare models end-to-end)
+
+```bash
+# Run full workflow with all models
+python3 run.py workflow-sweep --workflow ticket_classifier
+
+# Quick single-model test
+python3 run.py workflow-sweep --workflow ticket_classifier --model claude-sonnet-4-6 --iterations 1 --skip-judges
+```
+
 ### CLI flags
 
 | Flag | Description |
 |------|-------------|
 | `--workflow` | (Required) Workflow name from config.yaml |
-| `--step` | (Required) Step name within the workflow |
+| `--step` | (Required for model-sweep and prompt-sweep) Step name within the workflow |
 | `--model` | Test one model instead of all (default: all) |
 | `--iterations` | How many times to repeat each test (default: 3 from config) |
 | `--skip-judges` | Skip LLM judges, run programmatic scorers only |
@@ -182,8 +221,16 @@ python3 run.py prompt-sweep --workflow ticket_classifier --step classify_bug --p
 
 ## Viewing Results
 
-Results are logged to your MLflow instance. Open the experiment in the MLflow UI to:
+Each agent node gets its own MLflow experiment with a hierarchical path: `{prefix}/{workflow}/{node_id}`. For example, running a model sweep on the ticket classifier's classifier node creates an experiment called `atrotter-testing/ticket_classifier/classifier`. All test scenarios for that node (classify_bug, classify_feature, classify_question) land in the same experiment.
 
-- Compare metrics (latency, error rate, success rate) across models
+Experiments are tagged with `workflow_type` so you can filter by workflow. Individual runs are tagged with `model`, `provider`, `step`, and `mode` so you can sort and filter within an experiment.
+
+In the MLflow UI you can:
+
+- Sort runs by `model` tag to compare how different LLMs performed
+- Filter by `step` tag to see results for a specific test scenario
+- Filter by `mode` tag to compare node-level vs. workflow-level results
+- Compare metrics (latency, error rate, success rate) across models within one experiment
 - View LLM judge assessments (pass/fail) under the Traces tab
 - Click into individual traces to see the full input, output, and judge rationale
+- Filter experiments by `workflow_type` tag to see all nodes for a given workflow
