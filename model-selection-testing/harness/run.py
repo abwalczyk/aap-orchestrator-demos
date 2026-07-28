@@ -27,6 +27,7 @@ from mlflow.genai import evaluate as genai_evaluate
 
 from ao_client import AOClient
 from scorers import build_programmatic_scorers, build_llm_judges
+from tokens import compute_token_metrics
 
 
 def load_config(path: str) -> dict:
@@ -172,7 +173,8 @@ def build_rows(results: list, step: dict, workflow_name: str,
 
 
 def log_to_mlflow(rows: list, run_name: str, params: dict, scorers: list,
-                  node_prompt: str = "", ground_truth: dict = None):
+                  node_prompt: str = "", ground_truth: dict = None,
+                  token_metrics: list = None):
     """Create an MLflow run, log metrics and artifacts, run scorers."""
     with mlflow.start_run(run_name=run_name):
         for k, v in params.items():
@@ -192,6 +194,27 @@ def log_to_mlflow(rows: list, run_name: str, params: dict, scorers: list,
         mlflow.log_metric("error_rate", error_count / len(rows))
         mlflow.log_metric("success_rate", 1 - (error_count / len(rows)))
 
+        if token_metrics:
+            all_input = [t["input_tokens"] for t in token_metrics]
+            all_output = [t["output_tokens"] for t in token_metrics]
+            all_total = [t["total_tokens"] for t in token_metrics]
+            mlflow.log_metric("avg_input_tokens", sum(all_input) / len(all_input))
+            mlflow.log_metric("avg_output_tokens", sum(all_output) / len(all_output))
+            mlflow.log_metric("avg_total_tokens", sum(all_total) / len(all_total))
+
+            costs = [t["estimated_cost"] for t in token_metrics
+                     if t["estimated_cost"] is not None]
+            if costs:
+                mlflow.log_metric("avg_estimated_cost_usd", sum(costs) / len(costs))
+                mlflow.log_metric("total_estimated_cost_usd", sum(costs))
+
+            for i, t in enumerate(token_metrics):
+                mlflow.log_metric("input_tokens", t["input_tokens"], step=i)
+                mlflow.log_metric("output_tokens", t["output_tokens"], step=i)
+                mlflow.log_metric("total_tokens", t["total_tokens"], step=i)
+                if t["estimated_cost"] is not None:
+                    mlflow.log_metric("estimated_cost_usd", t["estimated_cost"], step=i)
+
         if node_prompt:
             mlflow.log_param("prompt_hash", hash(node_prompt) % (10**8))
             mlflow.log_text(node_prompt, "node_prompt.txt")
@@ -206,9 +229,16 @@ def log_to_mlflow(rows: list, run_name: str, params: dict, scorers: list,
         )
         trace_tags = {k: v for k, v in params.items()
                       if k in ("model", "provider", "step", "mode", "node_id")}
-        for t in traces:
+        for i, t in enumerate(traces):
             for tk, tv in trace_tags.items():
                 mlflow.set_trace_tag(t.info.trace_id, tk, str(tv))
+            if token_metrics and i < len(token_metrics):
+                tm = token_metrics[i]
+                mlflow.set_trace_tag(t.info.trace_id, "input_tokens", str(tm["input_tokens"]))
+                mlflow.set_trace_tag(t.info.trace_id, "output_tokens", str(tm["output_tokens"]))
+                mlflow.set_trace_tag(t.info.trace_id, "total_tokens", str(tm["total_tokens"]))
+                if tm["estimated_cost"] is not None:
+                    mlflow.set_trace_tag(t.info.trace_id, "estimated_cost_usd", f"{tm['estimated_cost']:.6f}")
 
 
 def get_node_prompt(ao: AOClient, workflow_id: str, node_id: str) -> str:
@@ -263,7 +293,8 @@ def model_sweep(args):
 
             try:
                 original_def = ao.swap_model(
-                    workflow["workflow_id"], step["node_id"], model["name"]
+                    workflow["workflow_id"], step["node_id"], model["name"],
+                    credential_id=model.get("credential_id"),
                 )
                 node_prompt = get_node_prompt(ao, workflow["workflow_id"], step["node_id"])
                 print(f"  Swapped to {model['name']}")
@@ -273,11 +304,16 @@ def model_sweep(args):
 
             try:
                 results = []
+                token_data = []
                 for i in range(iterations):
                     print(f"    Iteration {i + 1}/{iterations}...", end=" ", flush=True)
                     r = run_node(ao, workflow["workflow_id"], step, ground_truth)
                     print(f"status={r['status']} latency={r['latency_ms']:.0f}ms")
                     results.append(r)
+                    token_data.append(compute_token_metrics(
+                        node_prompt, ground_truth.get("trigger_inputs", {}),
+                        r["output"], model,
+                    ))
 
                 rows = build_rows(results, step, workflow["name"],
                                   model["name"], model["provider"], ground_truth)
@@ -301,6 +337,7 @@ def model_sweep(args):
                         scorers=scorers,
                         node_prompt=node_prompt,
                         ground_truth=ground_truth,
+                        token_metrics=token_data,
                     )
                     mode_label = "programmatic only" if args.skip_judges else "all scorers"
                     print(f"  Logged to MLflow ({mode_label})")
@@ -415,11 +452,16 @@ def prompt_sweep(args):
                 continue
 
             results = []
+            token_data = []
             for i in range(iterations):
                 print(f"    Iteration {i + 1}/{iterations}...", end=" ", flush=True)
                 r = run_node(ao, workflow["workflow_id"], step, ground_truth)
                 print(f"status={r['status']} latency={r['latency_ms']:.0f}ms")
                 results.append(r)
+                token_data.append(compute_token_metrics(
+                    pv["text"], ground_truth.get("trigger_inputs", {}),
+                    r["output"], model,
+                ))
 
             rows = build_rows(
                 results, step, workflow["name"],
@@ -448,6 +490,7 @@ def prompt_sweep(args):
                     scorers=scorers,
                     node_prompt=pv["text"],
                     ground_truth=ground_truth,
+                    token_metrics=token_data,
                 )
                 mode_label = "programmatic only" if args.skip_judges else "all scorers"
                 print(f"    Logged to MLflow ({mode_label})")
@@ -512,7 +555,8 @@ def workflow_sweep(args):
 
             try:
                 original_def = ao.swap_all_agentic_models(
-                    workflow["workflow_id"], model["name"]
+                    workflow["workflow_id"], model["name"],
+                    credential_id=model.get("credential_id"),
                 )
                 print(f"  Swapped all agentic nodes to {model['name']}")
             except Exception as e:
@@ -574,6 +618,10 @@ def workflow_sweep(args):
                         node_prompt = get_node_prompt(
                             ao, workflow["workflow_id"], node_id
                         )
+                        token_data = [compute_token_metrics(
+                            node_prompt, gt.get("trigger_inputs", {}),
+                            output, model,
+                        )]
                         run_name = (
                             f"{workflow['name']}/{step['name']}/{model['name']}"
                         )
@@ -593,6 +641,7 @@ def workflow_sweep(args):
                                 scorers=scorers,
                                 node_prompt=node_prompt,
                                 ground_truth=gt,
+                                token_metrics=token_data,
                             )
                             print(f"      {node_id}: logged to MLflow")
                         except Exception as e:
