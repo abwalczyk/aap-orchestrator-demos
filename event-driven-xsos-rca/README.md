@@ -146,16 +146,19 @@ Summary:
    - **`Linux - Notify RCA Chatroom`** → `event-driven-xsos-rca/playbooks/notify_chatroom.yml` (called by AO workflow, after the AI reasoning node — needs `api_chat_token` on the Mattermost credential, same as the disk-utilization demo's Notify Chatroom template). Use an execution environment with the `community.general` collection (e.g. the `Rhel` EE); the default supported EE doesn't ship it and the `mattermost` module will fail to resolve.
 3. Create an AO workflow with an **EDA webhook trigger**; copy the webhook URL into activation extra vars
 4. Fan the webhook trigger out to **Run xSOS Analysis** and **Gather Host Facts** in parallel, join both into a **Task Agent (AI)** node prompted to summarize host health from the published artifacts, then route its output as `ai_summary` into **Notify RCA Chatroom**
-5. Create a rulebook activation with **AAP Controller credential**, **AWS SQS credential**, and extra vars:
+5. **Create an AO service account** for webhook auth (see [Service account setup](#service-account-setup) below)
+6. Create a rulebook activation with **AAP Controller credential**, **AWS SQS credential**, and extra vars:
 
 ```yaml
 aws_region: us-east-1
 xsos_event_queue_name: aap-unknown-issue-rca
 ao_webhook_url: http://<ao-host>:8080/api/v1/webhooks/eda/<uuid>
 ao_webhook_validate_certs: false
+ao_webhook_client_id: "<service account client_id>"
+ao_webhook_client_secret: "<service account client_secret>"
 ```
 
-6. Run `publish_unknown_issue_event.yml` — within ~5 seconds EDA should launch **Post AO Webhook**, then AO should start the xSOS workflow
+7. Run `publish_unknown_issue_event.yml` — within ~5 seconds EDA should launch **Post AO Webhook**, then AO should start the xSOS workflow
 
 The rulebook uses **`run_job_template`**, not `run_module`, because AAP EDA only supports Controller-backed actions. The SQS source exposes your JSON payload as **`event.body`** in the rulebook (not `event.payload`).
 
@@ -182,6 +185,58 @@ ansible-playbook -i inventory/hosts.yml playbooks/notify_chatroom.yml \
   -e api_chat_token="<mattermost bot token>"
 ```
 
+## Service account setup
+
+Automation orchestrator requires a **service account** to authenticate incoming webhook requests. The `post_ao_webhook.yml` playbook exchanges the service account's `client_id` and `client_secret` for a short-lived Bearer token (OAuth 2.0 client credentials grant) before calling the webhook.
+
+### 1. Create a service account
+
+In automation orchestrator, go to **Access Management → Service Accounts** and create a new service account (e.g. `sean-service-account`).
+
+![Service Accounts list in AO Access Management](docs/images/ao-service-accounts-list.png)
+
+### 2. Create a credential and save the client ID / secret
+
+On the service account's **Credentials** tab, create a new credential. AO will display the `client_id` and `client_secret` **once** — copy both values immediately. If you lose them, you'll need to rotate to a new credential.
+
+### 3. Assign a role with webhook access
+
+On the service account's **Assignments** tab, assign a role that grants access to invoke webhook triggers (e.g. `project-user` on the project that owns the workflow).
+
+![Service account role assignments](docs/images/ao-service-account-assignments.png)
+
+### 4. Authorize the service account on the webhook trigger
+
+In the AO workflow editor, open the **EDA trigger** node. Under **Authorized service accounts**, select the service account you created. Publish the workflow after saving.
+
+![Webhook trigger with authorized service account](docs/images/ao-webhook-trigger-config.png)
+
+### 5. Add credentials to the EDA activation
+
+Set `ao_webhook_client_id` and `ao_webhook_client_secret` as extra vars on the **rulebook activation** in AAP. Do not commit these values to the repository.
+
+```yaml
+ao_webhook_client_id: "nx_sa_..."
+ao_webhook_client_secret: "<secret from step 2>"
+```
+
+The playbook automatically derives the token endpoint from the webhook URL (`/api/v1/auth/token` on the same host).
+
+### How the OAuth 2.0 flow works
+
+```text
+post_ao_webhook.yml
+  │
+  ├─ Step 1: POST /api/v1/auth/token
+  │    body: grant_type=client_credentials&client_id=...&client_secret=...
+  │    ← 200 { "access_token": "eyJ...", "token_type": "bearer", "expires_in": 900 }
+  │
+  └─ Step 2: POST /api/v1/webhooks/eda/<uuid>
+       Authorization: Bearer eyJ...
+       body: { "issue_id": ..., "host": ..., ... }
+       ← 202 Accepted
+```
+
 ## Prerequisites
 
 | Component | Required | Notes |
@@ -192,6 +247,7 @@ ansible-playbook -i inventory/hosts.yml playbooks/notify_chatroom.yml \
 | Mattermost | Yes | Chat destination for the AI-generated RCA summary |
 | EDA | Yes | SQS source → `run_job_template` → Post AO Webhook → AO |
 | AAP Controller credential on EDA activation | Yes | Required for `run_job_template` |
+| AO service account | Yes | OAuth 2.0 client credentials for webhook auth — see [Service account setup](#service-account-setup) |
 | `amazon.aws` collection | Yes | SQS source plugin in decision environment |
 
 ## IAM (minimum)
