@@ -4,19 +4,29 @@
   connection: local
   gather_facts: false
   tasks:
-    - name: Obtain OAuth2 access token from AAP gateway
-      ansible.builtin.uri:
-        url: "{{ ao_webhook_token_url }}"
-        method: POST
-        body_format: form-urlencoded
-        body:
-          grant_type: client_credentials
-          client_id: "{{ ao_webhook_client_id }}"
-          client_secret: "{{ ao_webhook_client_secret }}"
-        status_code: [200]
-        validate_certs: "{{ ao_webhook_validate_certs | default(false) | bool }}"
-      register: oauth_response
-      no_log: true
+    - name: Exchange OAuth2 client credentials for access token
+      block:
+        - name: Obtain OAuth2 access token from AAP gateway
+          ansible.builtin.uri:
+            url: "{{ ao_webhook_token_url }}"
+            method: POST
+            body_format: form-urlencoded
+            body:
+              grant_type: client_credentials
+              client_id: "{{ ao_webhook_client_id }}"
+              client_secret: "{{ ao_webhook_client_secret }}"
+            status_code: [200]
+            validate_certs: "{{ ao_webhook_validate_certs | default(false) | bool }}"
+          register: oauth_response
+          no_log: true
+      rescue:
+        - name: Show token request failure (credentials redacted)
+          ansible.builtin.fail:
+            msg: >-
+              OAuth2 token request to {{ ao_webhook_token_url }} failed —
+              HTTP {{ oauth_response.status | default('unknown') }}: {{ oauth_response.msg | default('no details') }}.
+              URL attempted: {{ oauth_response.url | default(ao_webhook_token_url) }}.
+              Check ao_webhook_token_url, ao_webhook_client_id, and ao_webhook_client_secret.
 
     - name: POST payload to AO EDA webhook
       ansible.builtin.uri:
