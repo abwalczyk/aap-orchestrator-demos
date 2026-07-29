@@ -1,6 +1,12 @@
 ---
 # Alternate rulebook: POST to AO webhook via run_module + uri (Anshul's pattern).
 # Requires an inventory attached to the EDA activation (e.g. Demo Inventory).
+#
+# NOTE: This variant does NOT support OAuth2 webhook auth (client_id / secret).
+# run_module can only execute a single module, so it cannot obtain an access
+# token before calling the webhook. Use the primary rulebook
+# (event-driven-xsos-rca.yml) with the "Linux - Post AO Webhook" job template
+# instead — that playbook handles the OAuth2 exchange.
 - name: Unknown issue xSOS RCA (run_module)
   hosts: localhost
   sources:

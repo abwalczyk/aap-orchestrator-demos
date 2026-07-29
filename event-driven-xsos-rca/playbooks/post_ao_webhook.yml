@@ -4,16 +4,27 @@
   connection: local
   gather_facts: false
   tasks:
+    - name: Obtain OAuth2 access token from AAP gateway
+      ansible.builtin.uri:
+        url: "{{ ao_webhook_token_url }}"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          grant_type: client_credentials
+          client_id: "{{ ao_webhook_client_id }}"
+          client_secret: "{{ ao_webhook_client_secret }}"
+        status_code: [200]
+        validate_certs: "{{ ao_webhook_validate_certs | default(false) | bool }}"
+      register: oauth_response
+      no_log: true
+
     - name: POST payload to AO EDA webhook
       ansible.builtin.uri:
         url: "{{ ao_webhook_url }}"
         method: POST
-        headers: >-
-          {{ {'Content-Type': 'application/json'}
-             | combine({'Authorization': 'Bearer ' + ao_webhook_token}
-               if ao_webhook_token is defined
-               and ao_webhook_token | length > 0
-               else {}) }}
+        headers:
+          Content-Type: application/json
+          Authorization: "Bearer {{ oauth_response.json.access_token }}"
         body_format: json
         body:
           issue_id: "{{ issue_id }}"
