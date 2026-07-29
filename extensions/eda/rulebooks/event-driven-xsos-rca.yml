@@ -29,4 +29,3 @@
               ao_webhook_validate_certs: "{{ ao_webhook_validate_certs | default(false) }}"
               ao_webhook_client_id: "{{ ao_webhook_client_id }}"
               ao_webhook_client_secret: "{{ ao_webhook_client_secret }}"
-              ao_webhook_token_url: "{{ ao_webhook_token_url }}"
