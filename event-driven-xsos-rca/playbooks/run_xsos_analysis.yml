@@ -61,6 +61,10 @@
         group: root
         mode: "0644"
 
+    - name: Display full xSOS report in job output
+      ansible.builtin.debug:
+        msg: "{{ xsos_result.stdout }}"
+
     - name: Publish RCA artifacts for downstream automation orchestrator steps
       ansible.builtin.set_stats:
         data:
@@ -68,11 +72,7 @@
           issue_summary: "{{ resolved_issue_summary }}"
           analyzed_at: "{{ ansible_date_time.iso8601 }}"
           xsos_report_path: "{{ xsos_output_dir }}/xsos-{{ report_stamp }}-{{ inventory_hostname }}.txt"
-          xsos_report_preview: "{{ xsos_result.stdout_lines[:80] | join('\n') }}"
+          xsos_report: "{{ xsos_result.stdout }}"
         per_host: false
         aggregate: false
       run_once: true
-
-    - name: Show xSOS summary
-      ansible.builtin.debug:
-        msg: "{{ xsos_result.stdout_lines[:25] }}"
