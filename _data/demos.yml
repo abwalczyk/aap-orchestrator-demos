@@ -22,7 +22,7 @@
   github_path: cve-remediation/
   github_doc: cve-remediation/README.md
   setup_guide: cve-remediation/REQUIREMENTS.md
-  workflow_json: cve-remediation/ao/rhel-cve-remediation-legacy.json
+  workflow_json: cve-remediation/ao/cve-lifecycle-lean.json
   arcade_embed: https://interact.redhat.com/share/WROy2xJc5Te0X1ru8hfo?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true
   arcade_title: Automation orchestrator for CVE remediation
   workflow_mermaid: |
