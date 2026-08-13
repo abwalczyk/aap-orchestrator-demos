@@ -18,8 +18,7 @@
       "name": "Fallback - Catch All",
       "parameters": {
         "diff_mode": false,
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 120,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Disk Utilization - Fallback",
         "organization_name": "Default"
       },
@@ -53,8 +52,7 @@
           "disk_use_percent_after": "${activity_595ded69_fca6_4ffd_95f4_bb345237efa6.artifacts.disk_use_percent_after}",
           "disk_use_percent_before": "${activity_595ded69_fca6_4ffd_95f4_bb345237efa6.artifacts.disk_use_percent_before}"
         },
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 117,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Notify Chatroom",
         "organization_name": "Default"
       },
@@ -74,8 +72,7 @@
           "disk_mount": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_mount}",
           "disk_use_percent": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_use_percent}"
         },
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 116,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Linux - Remediate - Disk Cleanup",
         "organization_name": "Default"
       },
@@ -94,8 +91,7 @@
         "extra_vars": {
           "test_disk_use_percent": 50
         },
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 115,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Disk Utilization Check",
         "organization_name": "Default"
       },
@@ -130,8 +126,7 @@
           "disk_use_percent_after": "${activity_5f6d0c2e_a677_4517_b013_ab2a9f8c2d59.artifacts.disk_use_percent_after}",
           "disk_use_percent_before": "${activity_5f6d0c2e_a677_4517_b013_ab2a9f8c2d59.artifacts.disk_use_percent_before}"
         },
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 117,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Notify Chatroom",
         "organization_name": "Default"
       },
@@ -146,8 +141,7 @@
       "name": "Remediate - Expand Disk",
       "parameters": {
         "diff_mode": false,
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 119,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Linux - Remediate - Disk Expand",
         "organization_name": "Default"
       },
@@ -181,8 +175,7 @@
           "disk_use_percent_after": "${activity_e18d67ef_1f99_4553_9807_81710484a424.artifacts.disk_use_percent_after}",
           "disk_use_percent_before": "${activity_e18d67ef_1f99_4553_9807_81710484a424.artifacts.disk_use_percent_before}"
         },
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 117,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Notify Chatroom",
         "organization_name": "Default"
       },
@@ -203,8 +196,7 @@
           "notify_host": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.notify_host}",
           "disk_use_percent": "${activity_61ac9127_f147_4fa8_9c04_189097e753e9.artifacts.disk_use_percent}"
         },
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 118,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Linux - Remediate - Continue",
         "organization_name": "Default"
       },
@@ -238,8 +230,7 @@
           "disk_use_percent_after": "${activity_ee976dab_737f_4a8f_a6ba_e774897e84e8.artifacts.disk_use_percent_after}",
           "disk_use_percent_before": "${activity_ee976dab_737f_4a8f_a6ba_e774897e84e8.artifacts.disk_use_percent_before}"
         },
-        "credential_id": "fdfdc5fa-14cf-46b6-8cb6-1394040b1b94",
-        "job_template_id": 117,
+        "credential_id": "YOUR_AAP_CREDENTIAL_ID",
         "job_template_name": "Notify Chatroom",
         "organization_name": "Default"
       },
