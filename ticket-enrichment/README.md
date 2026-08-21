@@ -1,88 +1,130 @@
 # Ticket Enrichment
 
-**Status: Coming soon** — Arcade walkthrough and workflow design are documented; AO workflow JSON and AAP playbooks will be added when the contributor uploads files.
-
 **Interactive walkthrough:** [Automation Orchestrator — Ticket Enrichment](https://interact.redhat.com/share/j5xLvTSv2GAkw6szxron) (Red Hat Interact Arcade)
 
 ## What this demo shows
 
-ServiceNow is the **ticket ingress**: an incident alert arrives on a webhook (`/incident-alert`). Two **agentic AI nodes** bookend the workflow — triage first, resolve last — with a **dynamic AAP job** in the middle. There is **no switch node**: the first agent decides which job template to run and passes the name downstream as a variable.
+ServiceNow is the **ticket ingress**: an incident number arrives on a webhook (`/snow-incident`). An **AI triage agent** fetches the incident from ServiceNow via MCP, discovers available AAP job templates via AAP MCP, and classifies the incident into one of three routes: **auto-remediate**, **needs-approval**, or **inform-only**.
 
-That pattern is the headline: **AI chooses the remediation playbook at runtime**, not a fixed dropdown or a multi-branch switch graph.
+A **switch node** routes the workflow based on the triage output. Auto-remediate and approved paths launch a **dynamic AAP job template** selected by the triage agent at runtime. The inform-only path uses a second **AI agent** to enrich the ticket, search for related incidents, and assign it for manual handling. Every path ends with an **Update SNOW Ticket** step.
 
-Default model in the canvas is **Claude Sonnet** (`claude-sonnet-4-6`); both agent nodes and the ServiceNow integration can be swapped for your environment.
+The AI model is configurable on both agentic nodes — tested with `claude-sonnet-4-6`.
 
 ## Workflow
 
 ```mermaid
 flowchart LR
-  A[Incident Alert Trigger] --> B[AI Triage Agent]
-  B --> C[Auto Remediation]
-  C --> D[Resolve Incident]
+  A[ServiceNow Trigger] --> B[AI Triage Agent]
+  B --> B1[Update SNOW Ticket]
+  B1 --> C{Route Decision}
+  C -->|Auto Remediate| D1[Run Auto Remediation]
+  D1 --> D2[Update SNOW Ticket]
+  C -->|Needs Approval| E0[Approve Remediation]
+  E0 -->|Approved| E1[Run Approved Remediation]
+  E1 --> E2[Update SNOW Ticket]
+  C -->|Inform Only| F1[Enrich and Assign]
+  F1 --> F2[Update SNOW Ticket]
 ```
-
-Marketplace diagram (AO node icons): [`workflow.mermaid`](workflow.mermaid) and `_data/demos.yml`.
 
 ### Step-by-step
 
 | Step | Node | Type | What it does |
-|------|------|------|----------------|
-| 1 | **Incident Alert Trigger** | Webhook (`/incident-alert`) | ServiceNow (or another ITSM) posts the incident payload into automation orchestrator |
-| 2 | **AI Triage Agent** | Agentic (`claude-sonnet-4-6`) | Fetches and analyzes the ticket via ServiceNow MCP; outputs structured JSON including **`job_template_name`** |
-| 3 | **Auto Remediation** | AAP job (dynamic) | Launches the job template named by the triage agent — see [dynamic job template](#dynamic-job-template) |
-| 4 | **Resolve Incident** | Agentic (`claude-sonnet-4-6`) | Updates ServiceNow via MCP — close notes, customer comment, resolved state |
+|------|------|------|--------------|
+| 1 | **ServiceNow Trigger** | Webhook (`/snow-incident`) | ServiceNow (or another ITSM) posts the incident number into automation orchestrator |
+| 2 | **AI Triage Agent** | Agentic | Fetches the incident via ServiceNow MCP, discovers AAP job templates via AAP MCP, classifies route and selects `job_template_name` |
+| 3 | **Update SNOW Ticket** | AAP job | Posts triage work notes and sets ticket to In Progress (state 2) |
+| 4 | **Route Decision** | Switch | Routes on `${triage_agent.result.content.route}` — three cases below |
+
+#### Auto Remediate path (Priority 1–2, low-risk fix, matching AAP template)
+
+| Step | Node | Type | What it does |
+|------|------|------|--------------|
+| 5a | **Run Auto Remediation** | AAP job (dynamic) | Launches `${triage_agent.result.content.job_template_name}` on `affected_system` |
+| 6a | **Update SNOW Ticket** | AAP job | Resolves the ticket (state 6) with close notes |
+
+#### Needs Approval path (Priority 1–2 risky fix, or Priority 3 with risk flags)
+
+| Step | Node | Type | What it does |
+|------|------|------|--------------|
+| 5b | **Approve Remediation Change** | Approval | Human reviews the triage analysis before proceeding |
+| 6b | **Run Approved Remediation** | AAP job (dynamic) | Same dynamic template as auto-remediate, gated by approval |
+| 7b | **Update SNOW Ticket** | AAP job | Resolves the ticket (state 6) with close notes |
+
+#### Inform Only path (Priority 4–5, or no matching AAP template)
+
+| Step | Node | Type | What it does |
+|------|------|------|--------------|
+| 5c | **Enrich and Assign** | Agentic | Searches related incidents, adds work notes, notifies customer, sets ticket to In Progress via ServiceNow MCP |
+| 6c | **Update SNOW Ticket** | AAP job | Posts enrichment summary to the ticket |
 
 ## Dynamic job template
 
-The **Auto Remediation** step uses an **expression** for the job template name instead of a fixed dropdown — the same idea as enabling **Use expressions** on an AAP job step and referencing upstream agent output:
+The **Run Auto Remediation** and **Run Approved Remediation** steps use an expression for the job template name:
 
 ```text
 ${triage_agent.result.content.job_template_name}
 ```
 
-The triage agent prompt instructs the model to pick the correct template from available AAP job templates (e.g. disk cleanup vs. service restart) based on incident context. The workflow stays linear: **no switch**, **no hardcoded template list** in the canvas.
+The triage agent prompt instructs the model to discover available AAP job templates and pick the best match for the incident. The workflow stays linear per branch — **no hardcoded template list** in the canvas.
+
+## Route logic
+
+| Route | Condition | Action |
+|-------|-----------|--------|
+| `auto_remediate` | Priority 1–2, low-risk fix, matching AAP template | Dynamic AAP job → resolve ticket |
+| `needs_approval` | Priority 1–2 risky fix, or Priority 3 with risk flags and matching template | Approval gate → dynamic AAP job → resolve ticket |
+| `inform_only` | Priority 4–5, or no matching AAP template | Enrich and assign agent → update ticket |
 
 ## Components (defaults — swappable)
 
 | Component | Default in demo | Notes |
 |-----------|-----------------|-------|
-| Ticket ingress | ServiceNow → webhook | Any system that can POST JSON to `/incident-alert` works |
-| ITSM integration | ServiceNow MCP | Fetch incident, work notes, comments, state updates |
-| AI model | `claude-sonnet-4-6` | Both agentic nodes; replace credential/model as needed |
+| Ticket ingress | ServiceNow → webhook | Any system that can POST `{"incident_number": "..."}` to `/snow-incident` |
+| ITSM integration | ServiceNow MCP | Triage + enrich agents read/write incidents |
+| AI model | Configurable (tested with `claude-sonnet-4-6`) | Both agentic nodes; replace credential/model as needed |
 | Remediation | Dynamic AAP job template | Name supplied by triage agent at runtime |
-| Orchestration | Automation orchestrator | Four-node linear workflow |
+| Orchestration | Automation orchestrator | Webhook → agent → switch → three paths |
 
 ## AO building blocks
 
 | Building block | Where |
 |----------------|-------|
-| Webhook trigger | Incident Alert Trigger |
-| Agentic node (×2) | AI Triage Agent, Resolve Incident |
+| Webhook trigger | ServiceNow Trigger |
+| Agentic node (×2) | AI Triage Agent, Enrich and Assign |
+| Switch node | Route Decision |
+| Approval node | Approve Remediation Change |
+| AAP job template (×5) | Update SNOW Ticket (×3), Run Auto Remediation, Run Approved Remediation |
 | ServiceNow MCP | Both agentic nodes |
-| AAP job template (dynamic expression) | Auto Remediation |
+| AAP MCP | AI Triage Agent |
+| Dynamic job template expression | Run Auto Remediation, Run Approved Remediation |
 
-## Planned artifacts
+## Playbooks
+
+| Playbook | Job Template Name | Runs on | Purpose |
+|----------|-------------------|---------|---------|
+| `update_snow_ticket.yml` | Incidents \| Update Ticket | localhost | Posts work notes and updates ticket state via SNOW API |
+| `remediate_disk_cleanup.yml` | Incidents \| Capacity - Disk Cleanup | RHEL target | Clears session storage, removes large logs, cleans dnf cache |
+| `remediate_process_cleanup.yml` | Incidents \| High CPU - Process Cleanup | RHEL target | Kills high-CPU processes above threshold, publishes before/after stats |
+
+## Artifacts
 
 ```
 ticket-enrichment/
   README.md              # this file
-  REQUIREMENTS.md        # setup checklist
-  workflow.mermaid       # diagram source
-  ao/                    # automation orchestrator workflow JSON (pending upload)
-  aap/playbooks/         # remediation playbooks referenced by dynamic JT names (pending upload)
+  REQUIREMENTS.md        # setup guide
+  ao/
+    ticket-enrichment.json   # AO workflow JSON (import into automation orchestrator)
+  playbooks/
+    update_snow_ticket.yml          # SNOW ticket update job template
+    remediate_disk_cleanup.yml      # disk cleanup remediation
+    remediate_process_cleanup.yml   # process cleanup remediation
 ```
 
 ## Relationship to other demos
 
 | Demo | Contrast |
 |------|----------|
-| **Ticket Enrichment** (this) | Linear flow; **dynamic** job template from AI; **no switch** |
-| [AI Incident Triage](../ai-incident-triage/) | Switch routes auto-remediate / approval / inform-only with **fixed** job templates per branch |
-| [Intelligent Cert Lifecycle](../cert-lifecycle/) | AI picks template + **approval gate** before run |
-
-## Next steps
-
-1. Contributor uploads AO workflow JSON → `ao/`
-2. Add AAP playbooks the triage agent can select → `aap/playbooks/`
-3. Complete `REQUIREMENTS.md` (ServiceNow instance, MCP creds, webhook URL)
-4. Set `workflow_json` in `_data/demos.yml` and flip `status` to `active`
+| **Ticket Enrichment** (this) | AI triage → switch routes to auto-remediate / approval / enrich-and-assign with **dynamic** job templates |
+| [Disk Utilization](../disk-utilization/) | Switch routes on disk_use_percent — no AI, deterministic thresholds |
+| [Intelligent Cert Lifecycle](../cert-lifecycle/) | AI picks template + **approval gate** before run — no switch routing |
+| [CVE Remediation](../cve-remediation/) | AI triage + switch: auto-patch dev, approve prod, investigate — with Lightspeed MCP |

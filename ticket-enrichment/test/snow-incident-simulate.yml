@@ -1,0 +1,199 @@
+---
+# Play 1: Plant issues on target host
+- name: Simulate - Plant Issues on Host
+  hosts: "{{ target_host }}"
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Build scenario list
+      ansible.builtin.set_fact:
+        active_scenarios: "{{ scenario_list if scenario_list is sequence and scenario_list is not string else [scenario_list] }}"
+
+    # --- auto_remediate: fill disk with large log files ---
+    - name: Fill disk with large log file to simulate capacity issue
+      ansible.builtin.shell: |
+        fallocate -l 5G /var/log/capacity_test.log 2>/dev/null || \
+          dd if=/dev/zero bs=1M count=5120 of=/var/log/capacity_test.log 2>/dev/null
+        echo "Capacity issue simulated: 5GB log file created"
+      when: "'auto_remediate' in active_scenarios"
+      changed_when: true
+
+    - name: Write disk pressure messages to syslog
+      ansible.builtin.shell: |
+        for i in {1..20}; do
+          logger -t app -p local0.err "CRITICAL: Failed to write data - disk full on /var/log partition"
+          logger -t kernel -p kern.err "EXT4-fs error: no space left on device"
+        done
+      when: "'auto_remediate' in active_scenarios"
+      changed_when: true
+      ignore_errors: true
+
+    # --- needs_approval: spawn CPU-eating process ---
+    - name: Spawn runaway process to simulate high CPU
+      ansible.builtin.shell: |
+        nohup nice -n 10 bash -c 'while true; do :; done' </dev/null >/dev/null 2>&1 &
+        echo $! > /tmp/runaway_process.pid
+        echo "Runaway process planted with PID $(cat /tmp/runaway_process.pid)"
+      when: "'needs_approval' in active_scenarios"
+      changed_when: true
+
+    - name: Write high CPU alerts to syslog
+      ansible.builtin.shell: |
+        PID=$(cat /tmp/runaway_process.pid 2>/dev/null || echo "unknown")
+        for i in {1..15}; do
+          logger -t monitoring -p daemon.warning "HIGH CPU: Process ${PID} consuming excessive CPU. System response times degraded."
+          logger -t app -p local0.err "WARN: Request timeout - upstream service not responding within SLA"
+        done
+      when: "'needs_approval' in active_scenarios"
+      changed_when: true
+      ignore_errors: true
+
+    # --- inform_only: fake failed SSH login attempts ---
+    - name: Write failed SSH login attempts to syslog
+      ansible.builtin.shell: |
+        for i in {1..30}; do
+          logger -t sshd -p auth.warning "Failed password for invalid user admin from 203.0.113.$((RANDOM % 254 + 1)) port $((RANDOM % 60000 + 1024)) ssh2"
+          logger -t sshd -p auth.warning "Failed password for invalid user root from 198.51.100.$((RANDOM % 254 + 1)) port $((RANDOM % 60000 + 1024)) ssh2"
+        done
+        logger -t sshd -p auth.alert "Repeated authentication failures detected - possible brute force attack"
+      when: "'inform_only' in active_scenarios"
+      changed_when: true
+      ignore_errors: true
+
+    - name: Report simulation complete
+      ansible.builtin.debug:
+        msg: "Issues planted on {{ inventory_hostname }} for scenarios: {{ active_scenarios | join(', ') }}"
+
+# Play 2: Create SNOW tickets and fire AO webhooks
+- name: Simulate - Create Tickets and Fire Webhooks
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    sim_host: "{{ target_host }}"
+
+    snow_instance_url: "{{ lookup('env', 'SNOW_INSTANCE_URL') | default('YOUR_SNOW_INSTANCE_URL') }}"
+    snow_username: "{{ lookup('env', 'SNOW_USERNAME') }}"
+    snow_password: "{{ lookup('env', 'SNOW_PASSWORD') }}"
+    snow_caller_id: "{{ lookup('env', 'SNOW_CALLER_ID') }}"
+
+    ao_base_url: "{{ lookup('env', 'AO_BASE_URL') }}"
+    ao_sa_client_id: "{{ lookup('env', 'AO_CLIENT_ID') }}"
+    ao_sa_client_secret: "{{ lookup('env', 'AO_CLIENT_SECRET') }}"
+    ao_webhook_path: "snow-incident"
+
+    scenarios:
+      auto_remediate:
+        short_description: "Disk space critical on {{ sim_host }}"
+        description: "Root filesystem at 95% capacity on {{ sim_host }}. Application log writes failing. Large log files consuming /var/log partition. Automated cleanup safe to execute."
+        category: "infrastructure"
+        severity: "1-Critical"
+        expected_route: "auto_remediate"
+      needs_approval:
+        short_description: "Application environment running slow on {{ sim_host }}, high CPU utilization detected"
+        description: "Monitoring detected sustained high CPU utilization on {{ sim_host }}. Application response times degraded beyond SLA thresholds. A runaway process may be consuming resources. Terminating it will free CPU but may interrupt an active workload. Human review recommended before action."
+        category: "infrastructure"
+        severity: "2-High"
+        expected_route: "needs_approval"
+      inform_only:
+        short_description: "Multiple failed SSH login attempts detected on {{ sim_host }}"
+        description: "Security monitoring detected 60+ failed SSH authentication attempts from multiple external IP addresses on {{ sim_host }} within the last 15 minutes. Pattern consistent with brute force attack. No successful logins observed. Requires security team investigation."
+        category: "security"
+        severity: "3-Medium"
+        expected_route: "inform_only"
+
+    snow_urgency_map:
+      "1-Critical": "1"
+      "2-High": "2"
+      "3-Medium": "3"
+      "4-Low": "4"
+
+  tasks:
+    - name: Build scenario list
+      ansible.builtin.set_fact:
+        active_scenarios: "{{ scenario_list if scenario_list is sequence and scenario_list is not string else [scenario_list] }}"
+
+    - name: Show scenarios to run
+      ansible.builtin.debug:
+        msg: "Running scenarios: {{ active_scenarios | join(', ') }}"
+
+    - name: Create SNOW incident tickets
+      ansible.builtin.uri:
+        url: "{{ snow_instance_url }}/api/now/table/incident"
+        method: POST
+        user: "{{ snow_username }}"
+        password: "{{ snow_password }}"
+        force_basic_auth: true
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+        body_format: json
+        body:
+          short_description: "{{ scenarios[item].short_description }}"
+          description: "{{ scenarios[item].description }}"
+          caller_id: "{{ snow_caller_id }}"
+          category: "{{ scenarios[item].category }}"
+          urgency: "{{ snow_urgency_map[scenarios[item].severity] | default('2') }}"
+          impact: "{{ snow_urgency_map[scenarios[item].severity] | default('2') }}"
+          cmdb_ci: "{{ sim_host }}"
+          state: "1"
+        status_code: [200, 201]
+      loop: "{{ active_scenarios }}"
+      register: snow_tickets
+
+    - name: Build ticket map
+      ansible.builtin.set_fact:
+        ticket_map: "{{ ticket_map | default({}) | combine({result.item: result.json.result.number}) }}"
+      loop: "{{ snow_tickets.results }}"
+      loop_control:
+        loop_var: result
+
+    - name: Show created tickets
+      ansible.builtin.debug:
+        msg: "Created SNOW tickets: {{ ticket_map }}"
+
+    - name: Get AO service account token
+      ansible.builtin.uri:
+        url: "{{ ao_base_url }}/api/v1/auth/token"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          grant_type: client_credentials
+          client_id: "{{ ao_sa_client_id }}"
+          client_secret: "{{ ao_sa_client_secret }}"
+        status_code: [200, 201]
+      register: ao_token_resp
+
+    - name: Fire AO webhook for each incident
+      ansible.builtin.uri:
+        url: "{{ ao_base_url }}/api/v1/webhooks/{{ ao_webhook_path }}"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ ao_token_resp.json.access_token }}"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          incident_number: "{{ ticket_map[item] }}"
+        status_code: [200, 201, 202]
+        validate_certs: false
+      loop: "{{ active_scenarios }}"
+      register: webhook_results
+
+    - name: Summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================================
+          SNOW INCIDENT WORKFLOWS TRIGGERED
+          ============================================================
+          {% for result in webhook_results.results %}
+          [{{ result.item | upper }}]
+            Ticket:         {{ ticket_map[result.item] }}
+            Description:    {{ scenarios[result.item].short_description }}
+            Category:       {{ scenarios[result.item].category }}
+            Severity:       {{ scenarios[result.item].severity }}
+            Expected Route: {{ scenarios[result.item].expected_route }}
+            Execution:      {{ result.json.execution_id | default('N/A') }}
+            Status:         {{ 'FIRED' if result.status in [200,201,202] else 'FAILED' }}
+          {% endfor %}
+          ============================================================
