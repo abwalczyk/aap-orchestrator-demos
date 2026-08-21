@@ -1,47 +1,176 @@
-# Ticket Enrichment — setup checklist
+# Ticket Enrichment Demo - Setup Guide
 
-🚧 **Under development.** Workflow JSON and playbooks are pending upload. This checklist reflects the intended canvas from the Arcade and workflow screenshot.
+## Infrastructure Required
+
+| Component | Purpose | How to Provision |
+|-----------|---------|------------------|
+| AAP 2.7 with AO | Controller + automation orchestrator | `aws-aap-containerized` repo or existing AAP install |
+| Demo VM | RHEL 9 EC2 target host for remediation playbooks | EC2 t3.small in `us-east-1` (or your region) |
+| ServiceNow | Incident ingress and ticket management | Developer instance or existing SNOW environment |
+| ServiceNow MCP | AI agents read/write incidents via MCP integration | Configure in automation orchestrator |
+| AI credential | Agentic nodes (triage + enrich-and-assign) | Any supported model; tested with `claude-sonnet-4-6` |
 
 ## Architecture
 
 ```text
-ServiceNow (webhook) → AI Triage Agent → Auto Remediation (dynamic JT) → Resolve Incident
+ServiceNow (webhook) → AI Triage Agent → Update SNOW Ticket → Route Decision (switch)
+  ├── Auto Remediate    → Run Auto Remediation (dynamic JT) → Update SNOW Ticket
+  ├── Needs Approval    → Approve Remediation → Run Approved Remediation → Update SNOW Ticket
+  └── Inform Only       → Enrich and Assign (agent) → Update SNOW Ticket
 ```
 
-## Prerequisites (expected)
+## Step-by-Step Setup
 
-| Component | Required | Default / notes |
-|-----------|----------|-----------------|
-| Ansible Automation Orchestrator | Yes | Import workflow from `ao/` when available |
-| ServiceNow | Yes | Ticket ingress; test incident for demos |
-| ServiceNow MCP integration | Yes | Triage + resolve agents read/write ITSM |
-| AAP Controller | Yes | Job templates the triage agent can name at runtime |
-| AI credential | Yes | Default model `claude-sonnet-4-6` on both agentic nodes |
+### 1. Provision Demo VM
 
-## Webhook trigger
+```bash
+# Create EC2 key pair
+aws ec2 create-key-pair --key-name ao-ticket-demo-key \
+  --query 'KeyMaterial' --output text --region us-east-1 > ao-ticket-demo-key.pem
+chmod 600 ao-ticket-demo-key.pem
 
-- Path: `/incident-alert` (as shown on canvas)
+# Launch RHEL 9 instance (adjust AMI for your region)
+aws ec2 run-instances \
+  --image-id ami-0d85f16af633ab171 \
+  --instance-type t3.small \
+  --key-name ao-ticket-demo-key \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=ao-ticket-demo-vm}]' \
+  --region us-east-1
+
+# Export connection details for inventory
+export TICKET_DEMO_VM_IP=<VM_PUBLIC_IP>
+export TICKET_DEMO_SSH_KEY=$PWD/ao-ticket-demo-key.pem
+
+# Verify SSH
+ssh -i "$TICKET_DEMO_SSH_KEY" ec2-user@"$TICKET_DEMO_VM_IP" 'hostname'
+```
+
+### 2. Configure ServiceNow
+
+1. **ServiceNow instance** — use a developer instance or existing environment.
+2. **MCP integration** — configure ServiceNow MCP in automation orchestrator so the agentic nodes can query and update incidents.
+3. **Test incident** — create a test incident to use during demos. The webhook payload only needs `incident_number`.
+
+### 3. Configure AAP Project and Inventory
+
+1. **Project** — sync this repo (or `ticket-enrichment/` subtree) from Git.
+2. **Inventory** — create a host for the demo VM:
+
+| Host | `ansible_host` | Notes |
+|------|----------------|-------|
+| `ticket-demo-vm` | VM public IP | `ec2-user`, SSH key credential |
+
+3. **ServiceNow credentials** — store as extra vars or a custom credential type:
+
+| Variable | Purpose |
+|----------|---------|
+| `snow_instance_url` | ServiceNow instance base URL |
+| `snow_username` | ServiceNow service account username |
+| `snow_password` | ServiceNow service account password |
+
+### 4. Register Job Templates
+
+Create three job templates from `ticket-enrichment/playbooks/`:
+
+| Name | Playbook | Runs on | Notes |
+|------|----------|---------|-------|
+| Incidents \| Update Ticket | `update_snow_ticket.yml` | localhost | Posts work notes and updates ticket state via SNOW API |
+| Incidents \| Capacity - Disk Cleanup | `remediate_disk_cleanup.yml` | `ticket-demo-vm` | One of the dynamic templates the triage agent can select |
+| Incidents \| High CPU - Process Cleanup | `remediate_process_cleanup.yml` | `ticket-demo-vm` | One of the dynamic templates the triage agent can select |
+
+**Credentials:**
+
+- SSH Machine credential on remediation playbooks (disk cleanup, process cleanup)
+- No SSH needed on Update Ticket — runs on localhost against the SNOW API
+
+**Update Ticket extra vars** — pass from AO or set on the job template:
+
+| Variable | Purpose |
+|----------|---------|
+| `ticket_id` | ServiceNow incident number (e.g., `INC0010001`) |
+| `notification_title` | Work note heading from triage agent |
+| `notification_body` | Work note body from triage agent |
+| `snow_ticket_state` | SNOW state value (`2` = In Progress, `6` = Resolved) |
+
+Enable **Prompt on launch → Extra Variables** on the Update Ticket template so AO can pass values from upstream nodes.
+
+### 5. Configure AI Credential
+
+1. Create an AI credential in automation orchestrator for your chosen model provider.
+2. Tested with `claude-sonnet-4-6` — any supported model works on both agentic nodes.
+3. Configure ServiceNow MCP and AAP MCP tool connections on the **AI Triage Agent** node.
+4. Configure ServiceNow MCP tool connections on the **Enrich and Assign** node.
+
+### 6. Import AO Workflow
+
+Import the workflow JSON into automation orchestrator:
+
+| File | Description |
+|------|-------------|
+| [`ao/ticket-enrichment.json`](ao/ticket-enrichment.json) | Three-way switch: auto-remediate, needs-approval, inform-only |
+
+**After import, update environment-specific values:**
+
+1. `credential_id` on each node — replace `REPLACE_WITH_AAP_CREDENTIAL_ID` and `REPLACE_WITH_AI_CREDENTIAL_ID`
+2. `integration_id` on AAP job nodes — replace `REPLACE_WITH_INTEGRATION_ID`
+3. ServiceNow credentials in extra vars — replace `YOUR_SNOW_*` placeholders
+4. Re-select MCP tools on both agentic nodes (tool UUIDs are environment-specific)
+
+### 7. Configure the Webhook
+
+- Path: `/snow-incident` (as defined in the workflow JSON)
 - ServiceNow (or a bridge) POSTs incident payload to the automation orchestrator webhook URL
-- Map incident fields the triage agent prompt expects (e.g. incident number, short description)
+- Required payload field: `incident_number` (string)
 
-## Dynamic job template
+Example test payload:
 
-On the **Auto Remediation** AAP job node:
+```json
+{
+  "incident_number": "INC0010001"
+}
+```
 
-1. Enable **Use expressions** for job template name (or equivalent in imported JSON)
-2. Set: `${triage_agent.result.content.job_template_name}`
-3. Ensure triage agent `response_schema` includes `job_template_name`
-4. Register matching job templates in AAP before first run
+### 8. Configure the Switch Node
 
-## Setup steps (draft)
+| Switch port | Condition | Path |
+|-------------|-----------|------|
+| Auto Remediate | `route == 'auto_remediate'` | Dynamic AAP job → Update SNOW (resolved) |
+| Needs Approval | `route == 'needs_approval'` | Approval gate → Dynamic AAP job → Update SNOW (resolved) |
+| Inform Only | `route == 'inform_only'` | Enrich and Assign agent → Update SNOW |
 
-1. Configure ServiceNow MCP in automation orchestrator.
-2. Configure AI model credential (Claude Sonnet or your replacement).
-3. Create AAP job templates for each remediation the triage agent may select.
-4. Import workflow JSON from `ao/` (pending).
-5. Publish workflow; wire ServiceNow webhook to `/incident-alert`.
-6. Fire a test incident and verify: triage work notes → AAP job (correct template) → resolved ticket.
+The switch routes on `${triage_agent.result.content.route}` — this is configured in the imported workflow JSON.
 
-## Arcade reference
+## Dynamic Job Template
 
-[Automation Orchestrator — Ticket Enrichment](https://interact.redhat.com/share/j5xLvTSv2GAkw6szxron)
+The **Run Auto Remediation** and **Run Approved Remediation** nodes use an expression for the job template name:
+
+```text
+${triage_agent.result.content.job_template_name}
+```
+
+The triage agent prompt instructs the model to discover available AAP job templates via AAP MCP and select the best match for the incident. Register job templates with descriptive names (e.g., `Incidents | Capacity - Disk Cleanup`) so the agent can match by incident category.
+
+## Verification
+
+```bash
+# Test auto-remediate: fire a P1 disk-cleanup incident
+curl -X POST https://<AO_HOST>/api/v1/webhooks/snow-incident \
+  -H "Content-Type: application/json" \
+  -d '{"incident_number": "INC0010001"}'
+# Expected: Triage → Update Ticket (In Progress) → Auto Remediate → Disk Cleanup runs → Update Ticket (Resolved)
+
+# Test needs-approval: fire a P2 risky change incident
+# Expected: Triage → Update Ticket → Approval gate (pauses) → Approved → Remediation → Update Ticket (Resolved)
+
+# Test inform-only: fire a P4 informational incident
+# Expected: Triage → Update Ticket → Enrich and Assign agent (searches related incidents, adds work notes) → Update Ticket
+```
+
+## Ports Reference
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| AAP Gateway | 443 / 8444 | AAP UI and API |
+| AO UI | 8080 | Automation orchestrator web interface |
+| ServiceNow | 443 | SNOW API for ticket operations |
+| SSH | 22 | Ansible connection to demo VM |

@@ -113,7 +113,20 @@ ai-incident-triage:
   status: under-development
 
 ticket-enrichment:
-  status: under-development
+  status: active
+  items:
+    - name: update_snow_ticket.yml
+      path: ticket-enrichment/playbooks/update_snow_ticket.yml
+      description: Looks up a ServiceNow incident by number, posts triage work notes, and updates ticket state. Adds close code and close notes when resolving (state 6).
+      runs_on: localhost (ServiceNow API)
+    - name: remediate_disk_cleanup.yml
+      path: ticket-enrichment/playbooks/remediate_disk_cleanup.yml
+      description: Clears app session storage, removes large log files and compressed archives, forces log rotation, cleans dnf cache, and publishes before/after disk stats as artifacts.
+      runs_on: RHEL target host
+    - name: remediate_process_cleanup.yml
+      path: ticket-enrichment/playbooks/remediate_process_cleanup.yml
+      description: Identifies and kills high-CPU processes above a configurable threshold, cleans up PID markers, and publishes before/after CPU stats as artifacts.
+      runs_on: RHEL target host
 
 multi-service-correlation:
   status: under-development

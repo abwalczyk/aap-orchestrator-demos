@@ -219,25 +219,30 @@ ai-incident-triage:
     - Post-remediation validation and operator notification
 
 ticket-enrichment:
-  description: ServiceNow posts an incident to a webhook. An AI triage agent analyzes the ticket via ServiceNow MCP and outputs which AAP job template to run. Auto Remediation launches that template dynamically — no switch node — then a second AI agent resolves the ticket in ServiceNow.
+  description: ServiceNow posts an incident number to a webhook. An AI triage agent fetches the ticket via ServiceNow MCP, discovers available AAP job templates, and classifies the incident into one of three routes — auto-remediate, needs-approval, or inform-only. A switch node routes the workflow accordingly. Auto-remediate and approved paths launch a dynamic AAP job template selected by the triage agent. The inform-only path uses a second AI agent to enrich the ticket, search for related incidents, and assign it for manual handling. Every path ends with an Update SNOW Ticket step.
   ao_building_blocks:
     - webhook_trigger
     - agentic
-    - servicenow_mcp
-    - aap_job_template_dynamic
+    - switch
+    - approval
+    - aap_job_template
+    - mcp_integration
   why_it_matters:
-    - Two AI nodes bookend the flow; the middle step is remediation, not a static enrichment-only handoff.
-    - Dynamic job template selection replaces switch branches or hardcoded template dropdowns — the triage agent picks the playbook at runtime.
-    - ServiceNow MCP on both agents keeps ITSM reads and writes native; webhook ingress works with any poster that can hit /incident-alert.
-  bullets:
-    - Webhook trigger — Incident Alert (`/incident-alert`)
-    - AI Triage Agent (default Claude Sonnet) → outputs `job_template_name`
-    - Auto Remediation — `${triage_agent.result.content.job_template_name}`
-    - Resolve Incident agent — close ticket via ServiceNow MCP
+    - AI triage classifies incidents and selects the remediation playbook at runtime — no hardcoded template lists or per-incident-type workflow forks.
+    - Three-way switch routing matches how operations teams actually respond — auto-fix low-risk, approve risky changes, enrich and assign everything else.
+    - The Triage Agent reads incident data via ServiceNow MCP, while the Enrich and Assign agent reads and writes — searching related incidents, adding work notes, and notifying the customer. Ticket state updates flow through the Update SNOW Ticket job template.
+    - Dynamic job template expression means new remediation playbooks work without changing the workflow.
+  routes:
+    headers: [Route, Condition, Action]
+    rows:
+      - [auto_remediate, "Priority 1–2, low-risk fix, matching AAP template", "Run dynamic AAP job template → Update SNOW ticket (resolved)"]
+      - [needs_approval, "Priority 1–2 risky fix, or Priority 3 with risk flags", "Approval gate → Run approved remediation → Update SNOW ticket (resolved)"]
+      - [inform_only, "Priority 4–5, or no matching AAP template", "Enrich and Assign agent (search related incidents, add work notes, notify customer) → Update SNOW ticket"]
   demo_ideas:
-    - Show the Auto Remediation node with Use expressions and the triage agent variable reference
-    - Fire a test webhook payload and walk job template selection changing per incident type
-    - Compare to AI Incident Triage switch demo — same ITSM, different routing style
+    - Fire a P1 disk-cleanup incident and watch auto-remediate run the dynamic job template end to end
+    - Fire a P2 firewall-change incident to trigger the approval gate and walk the needs-approval path
+    - Fire a P4 informational incident to show the Enrich and Assign agent searching for related tickets
+    - Compare to the linear Ticket Enrichment Arcade — same ITSM, now with switch routing and approval
     - Walk through the Interact Arcade end to end
 
 multi-service-correlation:

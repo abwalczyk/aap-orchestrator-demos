@@ -22,6 +22,7 @@ exclude:
   - ai-incident-triage/
   - multi-service-correlation/
   - disk-utilization/
+  - ticket-enrichment/
   - cve-remediation/
   - service-health/
   - patch-management/
