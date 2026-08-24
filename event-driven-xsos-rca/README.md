@@ -13,7 +13,7 @@ A monitoring or ticketing integration cannot classify an incident. Instead of gu
 5. An AO **Task Agent (AI)** node reasons over both artifact sets and produces a plain-language RCA summary
 6. **Linux - Notify RCA Chatroom** posts that summary to **Mattermost** for a human to read and decide next steps
 
-This pattern complements automation orchestrator agent workflows: EDA reacts to the event; xSOS and the facts playbook gather evidence in parallel; an AI node reasons over both; a human reviews the result in chat.
+This pattern complements automation orchestrator agent workflows: EDA reacts to the event; xSOS and the facts playbook gather evidence in parallel; a Task agent reasons over both; a human reviews the result in chat.
 
 ## Suggested folder name
 

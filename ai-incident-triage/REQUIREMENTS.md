@@ -15,7 +15,7 @@ Trigger (incident number)
 
 | Feature | Where |
 |---------|-------|
-| ServiceNow MCP native integration | All agentic nodes |
+| ServiceNow MCP native integration | All Task agents |
 | AI incident classification | Triage Agent |
 | Switch (3-way routing) | Route Decision node |
 | Human Approval | Approval branch |
@@ -101,6 +101,6 @@ Create 3 incidents in `ansible.service-now.com` to cover each demo branch:
    - `YOUR_AO_MODEL_CREDENTIAL_ID`
    - `YOUR_AO_AAP_CREDENTIAL_ID`
 2. Import JSON into AO
-3. Attach the `servicenow-mcp` integration to all agentic nodes listed above
+3. Attach the `servicenow-mcp` integration to all Task agents listed above
 4. Enable all SNOW MCP tools on each node
 5. Trigger with the incident number of one of the three test incidents

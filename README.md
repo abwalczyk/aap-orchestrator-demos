@@ -10,7 +10,7 @@ Hands-on demos for **Ansible Automation Platform automation orchestrator (AO)** 
 
 Automation orchestrator is the workflow engine in AAP for visual, multi-step automation:
 
-- **AI agent nodes** — reason and decide using LLMs
+- **Task agents** — reason and decide using LLMs
 - **AAP job template nodes** — run Ansible playbooks
 - **Approval nodes** — human-in-the-loop governance
 - **Event triggers** — react to Splunk, Prometheus, webhooks, and more

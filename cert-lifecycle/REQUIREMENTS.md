@@ -25,7 +25,7 @@ flowchart LR
 | HashiCorp Vault | Yes | Runs as container on the VM (provisioned by setup playbook) |
 | OpenShift | No | Not needed for this level |
 | Monitoring | No | Manual trigger via curl |
-| LiteLLM / LLM | Yes | Required for the AI agent node in AO |
+| LiteLLM / LLM | Yes | Required for the Task agent in AO |
 
 ## Collections Required
 

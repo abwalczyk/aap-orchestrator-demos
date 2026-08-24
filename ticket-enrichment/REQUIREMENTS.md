@@ -8,7 +8,7 @@
 | Demo VM | RHEL 9 EC2 target host for remediation playbooks | EC2 t3.small in `us-east-1` (or your region) |
 | ServiceNow | Incident ingress and ticket management | Developer instance or existing SNOW environment |
 | ServiceNow MCP | AI agents read/write incidents via MCP integration | Configure in automation orchestrator |
-| AI credential | Agentic nodes (triage + enrich-and-assign) | Any supported model; tested with `claude-sonnet-4-6` |
+| AI credential | Task agents (triage + enrich-and-assign) | Any supported model; tested with `claude-sonnet-4-6` |
 
 ## Architecture
 
@@ -48,7 +48,7 @@ ssh -i "$TICKET_DEMO_SSH_KEY" ec2-user@"$TICKET_DEMO_VM_IP" 'hostname'
 ### 2. Configure ServiceNow
 
 1. **ServiceNow instance** — use a developer instance or existing environment.
-2. **MCP integration** — configure ServiceNow MCP in automation orchestrator so the agentic nodes can query and update incidents.
+2. **MCP integration** — configure ServiceNow MCP in automation orchestrator so the Task agents can query and update incidents.
 3. **Test incident** — create a test incident to use during demos. The webhook payload only needs `incident_number`.
 
 ### 3. Configure AAP Project and Inventory
@@ -97,7 +97,7 @@ Enable **Prompt on launch → Extra Variables** on the Update Ticket template so
 ### 5. Configure AI Credential
 
 1. Create an AI credential in automation orchestrator for your chosen model provider.
-2. Tested with `claude-sonnet-4-6` — any supported model works on both agentic nodes.
+2. Tested with `claude-sonnet-4-6` — any supported model works on both Task agents.
 3. Configure ServiceNow MCP and AAP MCP tool connections on the **AI Triage Agent** node.
 4. Configure ServiceNow MCP tool connections on the **Enrich and Assign** node.
 
@@ -114,7 +114,7 @@ Import the workflow JSON into automation orchestrator:
 1. `credential_id` on each node — replace `REPLACE_WITH_AAP_CREDENTIAL_ID` and `REPLACE_WITH_AI_CREDENTIAL_ID`
 2. `integration_id` on AAP job nodes — replace `REPLACE_WITH_INTEGRATION_ID`
 3. ServiceNow credentials in extra vars — replace `YOUR_SNOW_*` placeholders
-4. Re-select MCP tools on both agentic nodes (tool UUIDs are environment-specific)
+4. Re-select MCP tools on both Task agents (tool UUIDs are environment-specific)
 
 ### 7. Configure the Webhook
 

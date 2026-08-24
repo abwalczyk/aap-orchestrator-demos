@@ -17,7 +17,7 @@ Trigger (incident number)
 
 | Feature | Where |
 |---------|-------|
-| ServiceNow MCP native integration | All agentic nodes |
+| ServiceNow MCP native integration | All Task agents |
 | AI incident classification | Triage Agent |
 | Switch (3-way routing) | Route Decision node |
 | Human Approval | Approval branch |

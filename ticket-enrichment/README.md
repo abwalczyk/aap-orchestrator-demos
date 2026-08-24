@@ -8,7 +8,7 @@ ServiceNow is the **ticket ingress**: an incident number arrives on a webhook (`
 
 A **switch node** routes the workflow based on the triage output. Auto-remediate and approved paths launch a **dynamic AAP job template** selected by the triage agent at runtime. The inform-only path uses a second **AI agent** to enrich the ticket, search for related incidents, and assign it for manual handling. Every path ends with an **Update SNOW Ticket** step.
 
-The AI model is configurable on both agentic nodes — tested with `claude-sonnet-4-6`.
+The AI model is configurable on both Task agents — tested with `claude-sonnet-4-6`.
 
 ## Workflow
 
@@ -31,7 +31,7 @@ flowchart LR
 | Step | Node | Type | What it does |
 |------|------|------|--------------|
 | 1 | **ServiceNow Trigger** | Webhook (`/snow-incident`) | ServiceNow (or another ITSM) posts the incident number into automation orchestrator |
-| 2 | **AI Triage Agent** | Agentic | Fetches the incident via ServiceNow MCP, discovers AAP job templates via AAP MCP, classifies route and selects `job_template_name` |
+| 2 | **AI Triage Agent** | Task agent | Fetches the incident via ServiceNow MCP, discovers AAP job templates via AAP MCP, classifies route and selects `job_template_name` |
 | 3 | **Update SNOW Ticket** | AAP job | Posts triage work notes and sets ticket to In Progress (state 2) |
 | 4 | **Route Decision** | Switch | Routes on `${triage_agent.result.content.route}` — three cases below |
 
@@ -54,7 +54,7 @@ flowchart LR
 
 | Step | Node | Type | What it does |
 |------|------|------|--------------|
-| 5c | **Enrich and Assign** | Agentic | Searches related incidents, adds work notes, notifies customer, sets ticket to In Progress via ServiceNow MCP |
+| 5c | **Enrich and Assign** | Task agent | Searches related incidents, adds work notes, notifies customer, sets ticket to In Progress via ServiceNow MCP |
 | 6c | **Update SNOW Ticket** | AAP job | Posts enrichment summary to the ticket |
 
 ## Dynamic job template
@@ -81,7 +81,7 @@ The triage agent prompt instructs the model to discover available AAP job templa
 |-----------|-----------------|-------|
 | Ticket ingress | ServiceNow → webhook | Any system that can POST `{"incident_number": "..."}` to `/snow-incident` |
 | ITSM integration | ServiceNow MCP | Triage + enrich agents read/write incidents |
-| AI model | Configurable (tested with `claude-sonnet-4-6`) | Both agentic nodes; replace credential/model as needed |
+| AI model | Configurable (tested with `claude-sonnet-4-6`) | Both Task agents; replace credential/model as needed |
 | Remediation | Dynamic AAP job template | Name supplied by triage agent at runtime |
 | Orchestration | Automation orchestrator | Webhook → agent → switch → three paths |
 
@@ -90,11 +90,11 @@ The triage agent prompt instructs the model to discover available AAP job templa
 | Building block | Where |
 |----------------|-------|
 | Webhook trigger | ServiceNow Trigger |
-| Agentic node (×2) | AI Triage Agent, Enrich and Assign |
+| Task agent (×2) | AI Triage Agent, Enrich and Assign |
 | Switch node | Route Decision |
 | Approval node | Approve Remediation Change |
 | AAP job template (×5) | Update SNOW Ticket (×3), Run Auto Remediation, Run Approved Remediation |
-| ServiceNow MCP | Both agentic nodes |
+| ServiceNow MCP | Both Task agents |
 | AAP MCP | AI Triage Agent |
 | Dynamic job template expression | Run Auto Remediation, Run Approved Remediation |
 

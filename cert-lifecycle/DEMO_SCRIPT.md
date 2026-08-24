@@ -9,7 +9,7 @@
 
 > **Important framing guidance**
 >
-> This demo is an **example of what you can build with Automation orchestrator** — not a prescriptive solution customers should deploy as-is. Certificate management is the use case chosen to illustrate AO's core capabilities: event-driven triggers, AI agent nodes, human-in-the-loop approvals, and dynamic AAP job execution.
+> This demo is an **example of what you can build with Automation orchestrator** — not a prescriptive solution customers should deploy as-is. Certificate management is the use case chosen to illustrate AO's core capabilities: event-driven triggers, Task agents, human-in-the-loop approvals, and dynamic AAP job execution.
 >
 > Every customer's workflow will look different based on their certificate authority, monitoring stack, approval process, and infrastructure. The patterns are transferable. The specific workflow is a starting point.
 >
