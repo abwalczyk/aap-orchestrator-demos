@@ -160,7 +160,7 @@ terms:
     label: Script node
     icon: assets/icons/glossary/script-node.svg
     category: actions
-    description: Runs JavaScript in the workflow engine to parse, transform, or reshape data between steps — for example, normalizing an API response before an agent or AAP job consumes it. Ideal for lightweight data manipulation without deploying a playbook; test with mock upstream output in the builder before publishing.
+    description: Runs Python or Bash to parse, transform, or reshape data between steps — for example, normalizing an API response before a Task agent or AAP job consumes it. Lightweight alternative to launching a playbook; test with mock upstream output in the builder before publishing. Disabled by default until execution-plane capabilities are available in your deployment — intended for demos and early evaluation today. Additional scripting languages may be supported later based on demand.
     nexus_source: workflows/understand-testing-deploying-workflows.md
 
   http_request:
