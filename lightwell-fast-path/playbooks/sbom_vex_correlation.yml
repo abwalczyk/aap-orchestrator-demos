@@ -1,0 +1,91 @@
+---
+- name: Lightwell | SBOM/VEX Correlation TPA
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    governance_route_override: "{{ governance_route | default('') }}"
+
+  tasks:
+    - name: Normalize trigger payload
+      ansible.builtin.set_fact:
+        patch_artifact:
+          name: "{{ artifact_name | default(trigger_artifact_name | default('unknown')) }}"
+          version: "{{ artifact_version | default(trigger_artifact_version | default('unknown')) }}"
+          source: "{{ event_source | default(trigger_source | default('manual')) }}"
+          cve_ids: "{{ cve_ids | default([]) }}"
+
+    - name: Simulate SBOM lookup
+      ansible.builtin.set_fact:
+        sbom_components: "{{ patch_artifact.cve_ids | length }}"
+        sbom_package: "{{ patch_artifact.name }}:{{ patch_artifact.version }}"
+
+    - name: Simulate VEX correlation
+      ansible.builtin.set_fact:
+        vex_summary:
+          exploitable_cves: "{{ patch_artifact.cve_ids | select('match', '.*') | list | length }}"
+          policy_status: "{{ 'approved' if (patch_artifact.cve_ids | length) == 0 else 'review_required' }}"
+          vex_status: "{{ 'not_affected' if (patch_artifact.cve_ids | length) == 0 else 'under_investigation' }}"
+
+    - name: Use explicit governance route override when provided
+      ansible.builtin.set_fact:
+        derived_governance_route: "{{ governance_route_override }}"
+      when: governance_route_override | length > 0
+
+    - name: Route deployed GitLab notifications to application_patched
+      ansible.builtin.set_fact:
+        derived_governance_route: application_patched
+      when:
+        - governance_route_override | length == 0
+        - event_source | default(trigger_source | default('manual')) == 'gitlab'
+        - deployment_status | default('') == 'deployed'
+
+    - name: Route clean SBOM/VEX to auto_patch_approved
+      ansible.builtin.set_fact:
+        derived_governance_route: auto_patch_approved
+      when:
+        - governance_route_override | length == 0
+        - derived_governance_route is not defined
+        - vex_summary.policy_status == 'approved'
+        - patch_artifact.cve_ids | length == 0
+
+    - name: Route policy review to manual_patching_required
+      ansible.builtin.set_fact:
+        derived_governance_route: manual_patching_required
+      when:
+        - governance_route_override | length == 0
+        - derived_governance_route is not defined
+        - vex_summary.policy_status == 'review_required'
+
+    - name: Default governance route to fallback
+      ansible.builtin.set_fact:
+        derived_governance_route: fallback
+      when: derived_governance_route is not defined
+
+    - name: Report correlation summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================================
+          SBOM/VEX CORRELATION COMPLETE
+          ============================================================
+          Artifact:     {{ sbom_package }}
+          Source:       {{ patch_artifact.source }}
+          CVE IDs:      {{ patch_artifact.cve_ids | default([]) | join(', ') | default('none') }}
+          VEX Status:   {{ vex_summary.vex_status }}
+          Policy:       {{ vex_summary.policy_status }}
+          Route:        {{ derived_governance_route }}
+          ============================================================
+
+    - name: Publish governance artifacts for switch routing
+      ansible.builtin.set_stats:
+        data:
+          governance_route: "{{ derived_governance_route }}"
+          artifact_name: "{{ patch_artifact.name }}"
+          artifact_version: "{{ patch_artifact.version }}"
+          event_source: "{{ patch_artifact.source }}"
+          cve_ids: "{{ patch_artifact.cve_ids | join(',') }}"
+          vex_status: "{{ vex_summary.vex_status }}"
+          policy_status: "{{ vex_summary.policy_status }}"
+          sbom_package: "{{ sbom_package }}"
+          status: "completed"

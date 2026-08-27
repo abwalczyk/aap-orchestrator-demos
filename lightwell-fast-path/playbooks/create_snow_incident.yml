@@ -1,0 +1,47 @@
+---
+- name: Lightwell | Create ServiceNow Incident
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Build incident payload
+      ansible.builtin.set_fact:
+        incident_payload:
+          short_description: "{{ notification_title | default('Lightwell patch governance event') }}"
+          description: "{{ notification_body | default('Patch publication requires operational follow-up.') }}"
+          caller_id: "{{ snow_caller_id | default(omit) }}"
+          category: "{{ incident_category | default('software') }}"
+          urgency: "{{ incident_urgency | default('3') }}"
+          impact: "{{ incident_impact | default('3') }}"
+          cmdb_ci: "{{ affected_system | default(artifact_name | default('unknown')) }}"
+          state: "1"
+
+    - name: Create SNOW incident
+      ansible.builtin.uri:
+        url: "{{ snow_instance_url }}/api/now/table/incident"
+        method: POST
+        user: "{{ snow_username }}"
+        password: "{{ snow_password }}"
+        force_basic_auth: true
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+        body_format: json
+        body: "{{ incident_payload }}"
+        status_code: [200, 201]
+      register: snow_create
+
+    - name: Publish incident artifacts
+      ansible.builtin.set_stats:
+        data:
+          incident_number: "{{ snow_create.json.result.number }}"
+          incident_sys_id: "{{ snow_create.json.result.sys_id }}"
+          short_description: "{{ snow_create.json.result.short_description }}"
+          status: "created"
+
+    - name: Log result
+      ansible.builtin.debug:
+        msg: |
+          ServiceNow incident {{ snow_create.json.result.number }} created.
+          URL: {{ snow_instance_url }}/nav_to.do?uri=incident.do?sys_id={{ snow_create.json.result.sys_id }}

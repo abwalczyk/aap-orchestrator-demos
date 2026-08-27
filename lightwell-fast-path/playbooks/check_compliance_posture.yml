@@ -1,0 +1,44 @@
+---
+- name: Lightwell | Check Compliance Posture
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Evaluate compliance posture
+      ansible.builtin.set_fact:
+        compliance_result:
+          policy_bundle: "{{ policy_bundle | default('lightwell-fast-path') }}"
+          sbom_required: "{{ sbom_attached | default('true') | bool }}"
+          vex_required: "{{ vex_attached | default('true') | bool }}"
+          cve_blockers: "{{ cve_blockers | default(0) | int }}"
+          posture: >-
+            {%- if (cve_blockers | default(0) | int) > 0 -%}
+            non_compliant
+            {%- elif not (sbom_attached | default('true') | bool) or not (vex_attached | default('true') | bool) -%}
+            needs_review
+            {%- else -%}
+            compliant
+            {%- endif -%}
+
+    - name: Report compliance summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================================
+          COMPLIANCE POSTURE CHECK
+          ============================================================
+          Policy bundle: {{ compliance_result.policy_bundle }}
+          SBOM required: {{ compliance_result.sbom_required }}
+          VEX required:  {{ compliance_result.vex_required }}
+          CVE blockers:  {{ compliance_result.cve_blockers }}
+          Posture:       {{ compliance_result.posture }}
+          ============================================================
+
+    - name: Publish compliance artifacts
+      ansible.builtin.set_stats:
+        data:
+          compliance_posture: "{{ compliance_result.posture }}"
+          policy_bundle: "{{ compliance_result.policy_bundle }}"
+          cve_blockers: "{{ compliance_result.cve_blockers | string }}"
+          compliance_status: "{{ 'passed' if compliance_result.posture == 'compliant' else 'failed' }}"
+          status: "completed"

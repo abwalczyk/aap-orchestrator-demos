@@ -1,0 +1,118 @@
+---
+- name: Simulate - Fire Lightwell Fast Path Triggers
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    ao_base_url: "{{ lookup('env', 'AO_BASE_URL') }}"
+    ao_sa_client_id: "{{ lookup('env', 'AO_CLIENT_ID') }}"
+    ao_sa_client_secret: "{{ lookup('env', 'AO_CLIENT_SECRET') }}"
+
+    snow_instance_url: "{{ lookup('env', 'SNOW_INSTANCE_URL') | default('YOUR_SNOW_INSTANCE_URL') }}"
+    snow_username: "{{ lookup('env', 'SNOW_USERNAME') }}"
+    snow_password: "{{ lookup('env', 'SNOW_PASSWORD') }}"
+    snow_caller_id: "{{ lookup('env', 'SNOW_CALLER_ID') }}"
+
+    scenarios:
+      auto_patch_approved:
+        artifact_name: "lightwell-app"
+        artifact_version: "2.4.1"
+        cve_ids: []
+        governance_route: "auto_patch_approved"
+        expected_route: "auto_patch_approved"
+      manual_patching_required:
+        artifact_name: "lightwell-api"
+        artifact_version: "1.9.0"
+        cve_ids:
+          - "CVE-2026-1234"
+        governance_route: "manual_patching_required"
+        expected_route: "manual_patching_required"
+      application_patched:
+        artifact_name: "lightwell-web"
+        artifact_version: "3.1.0"
+        pipeline_url: "https://gitlab.example.com/lightwell/web/-/pipelines/12345"
+        deployment_status: "deployed"
+        event_source: "gitlab"
+        governance_route: "application_patched"
+        expected_route: "application_patched"
+
+  tasks:
+    - name: Build scenario list
+      ansible.builtin.set_fact:
+        active_scenarios: "{{ scenario_list if scenario_list is sequence and scenario_list is not string else [scenario_list] }}"
+
+    - name: Show scenarios to run
+      ansible.builtin.debug:
+        msg: "Running scenarios: {{ active_scenarios | join(', ') }}"
+
+    - name: Create SNOW incident for application_patched path
+      ansible.builtin.uri:
+        url: "{{ snow_instance_url }}/api/now/table/incident"
+        method: POST
+        user: "{{ snow_username }}"
+        password: "{{ snow_password }}"
+        force_basic_auth: true
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+        body_format: json
+        body:
+          short_description: "Lightwell deployment verification for {{ scenarios.application_patched.artifact_name }}"
+          description: "Pre-existing incident for deployed application patch evidence workflow."
+          caller_id: "{{ snow_caller_id }}"
+          category: "software"
+          urgency: "3"
+          impact: "3"
+          cmdb_ci: "{{ scenarios.application_patched.artifact_name }}"
+          state: "2"
+        status_code: [200, 201]
+      when: "'application_patched' in active_scenarios"
+      register: deployed_incident
+
+    - name: Get AO service account token
+      ansible.builtin.uri:
+        url: "{{ ao_base_url }}/api/v1/auth/token"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          grant_type: client_credentials
+          client_id: "{{ ao_sa_client_id }}"
+          client_secret: "{{ ao_sa_client_secret }}"
+        status_code: [200, 201]
+      register: ao_token_resp
+
+    - name: Build trigger payload for each scenario
+      ansible.builtin.set_fact:
+        trigger_payload: "{{ scenarios[item] | combine({'incident_number': deployed_incident.json.result.number}) if item == 'application_patched' else scenarios[item] }}"
+      loop: "{{ active_scenarios }}"
+      register: payload_build
+      when: item != 'application_patched' or deployed_incident is not skipped
+
+    - name: Fire Lightwell Fast Path manual trigger for each scenario
+      ansible.builtin.uri:
+        url: "{{ ao_base_url }}/api/v1/workflows/lightwell-fast-path/executions"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ ao_token_resp.json.access_token }}"
+          Content-Type: "application/json"
+        body_format: json
+        body: "{{ trigger_payload }}"
+        status_code: [200, 201, 202]
+        validate_certs: false
+      loop: "{{ active_scenarios }}"
+      register: execution_results
+
+    - name: Summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================================
+          LIGHTWELL FAST PATH WORKFLOWS TRIGGERED
+          ============================================================
+          {% for result in execution_results.results %}
+          [{{ result.item | upper }}]
+            Artifact:       {{ scenarios[result.item].artifact_name }}:{{ scenarios[result.item].artifact_version }}
+            Expected Route: {{ scenarios[result.item].expected_route }}
+            Execution:      {{ result.json.execution_id | default('N/A') }}
+            Status:         {{ 'FIRED' if result.status in [200,201,202] else 'FAILED' }}
+          {% endfor %}
+          ============================================================

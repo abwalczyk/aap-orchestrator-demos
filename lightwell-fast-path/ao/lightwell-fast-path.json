@@ -1,0 +1,456 @@
+{
+  "name": "Lightwell Fast Path",
+  "description": "Lightwell Fast Path — SBOM/VEX correlation and governance routing for patch publications",
+  "schema_version": "2.0.0",
+  "triggers": [
+    {
+      "id": "trigger_manual",
+      "name": "Lightwell Patch Published - Manual",
+      "type": "manual_trigger",
+      "position": {
+        "x": -120,
+        "y": 80
+      },
+      "parameters": {
+        "input_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "required": [
+            "artifact_name",
+            "artifact_version"
+          ],
+          "properties": {
+            "artifact_name": {
+              "type": "string",
+              "description": "Published artifact or image name"
+            },
+            "artifact_version": {
+              "type": "string",
+              "description": "Published artifact version or tag"
+            },
+            "cve_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional CVE identifiers from the publication"
+            },
+            "governance_route": {
+              "type": "string",
+              "description": "Optional demo override for switch routing"
+            },
+            "incident_number": {
+              "type": "string",
+              "description": "Existing ServiceNow incident for deployed-path verification"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    {
+      "id": "trigger_eda_jfrog",
+      "name": "EDA Notification from JFrog",
+      "type": "eda_trigger",
+      "position": {
+        "x": -120,
+        "y": 220
+      },
+      "parameters": {
+        "input_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "artifact_name": {
+              "type": "string"
+            },
+            "artifact_version": {
+              "type": "string"
+            },
+            "cve_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "event_source": {
+              "type": "string",
+              "default": "jfrog"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    {
+      "id": "trigger_eda_cicd",
+      "name": "EDA Notification CI/CD",
+      "type": "eda_trigger",
+      "position": {
+        "x": -120,
+        "y": 360
+      },
+      "parameters": {
+        "input_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "artifact_name": {
+              "type": "string"
+            },
+            "artifact_version": {
+              "type": "string"
+            },
+            "pipeline_url": {
+              "type": "string"
+            },
+            "deployment_status": {
+              "type": "string"
+            },
+            "event_source": {
+              "type": "string",
+              "default": "cicd"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    {
+      "id": "trigger_eda_gitlab",
+      "name": "EDA Notification Gitlab",
+      "type": "eda_trigger",
+      "position": {
+        "x": -120,
+        "y": 500
+      },
+      "parameters": {
+        "input_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "artifact_name": {
+              "type": "string"
+            },
+            "artifact_version": {
+              "type": "string"
+            },
+            "pipeline_url": {
+              "type": "string"
+            },
+            "deployment_status": {
+              "type": "string"
+            },
+            "event_source": {
+              "type": "string",
+              "default": "gitlab"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sbom_vex_correlation",
+      "name": "SBOM/VEX Correlation TPA",
+      "type": "aap_job_template",
+      "position": {
+        "x": 280,
+        "y": 300
+      },
+      "parameters": {
+        "diff_mode": false,
+        "extra_vars": {
+          "cve_ids": "${trigger.cve_ids}",
+          "artifact_name": "${trigger.artifact_name}",
+          "event_source": "${trigger.event_source}",
+          "artifact_version": "${trigger.artifact_version}",
+          "governance_route": "${trigger.governance_route}",
+          "deployment_status": "${trigger.deployment_status}"
+        },
+        "job_template_name": "Lightwell | SBOM/VEX Correlation TPA",
+        "organization_name": "Default"
+      }
+    },
+    {
+      "id": "governance_switch",
+      "name": "Governance Route Decision",
+      "type": "switch",
+      "position": {
+        "x": 620,
+        "y": 300
+      },
+      "parameters": {
+        "cases": [
+          {
+            "port": "case_0",
+            "label": "Auto Patch Approved (Policy Approved)",
+            "condition": "${sbom_vex_correlation.artifacts.governance_route} == 'auto_patch_approved'"
+          },
+          {
+            "port": "case_1",
+            "label": "Manual Patching required (Policy Enforced)",
+            "condition": "${sbom_vex_correlation.artifacts.governance_route} == 'manual_patching_required'"
+          },
+          {
+            "port": "case_2",
+            "label": "Application Patched/Deployed",
+            "condition": "${sbom_vex_correlation.artifacts.governance_route} == 'application_patched'"
+          }
+        ],
+        "default_port": "default"
+      }
+    },
+    {
+      "id": "gather_context_workflow",
+      "name": "Gather Context - CMDB/CVE/VEX",
+      "type": "aap_workflow_template",
+      "position": {
+        "x": 980,
+        "y": 80
+      },
+      "parameters": {
+        "diff_mode": false,
+        "extra_vars": {
+          "cve_ids": "${sbom_vex_correlation.artifacts.cve_ids}",
+          "artifact_name": "${sbom_vex_correlation.artifacts.artifact_name}",
+          "artifact_version": "${sbom_vex_correlation.artifacts.artifact_version}",
+          "affected_system": "${sbom_vex_correlation.artifacts.artifact_name}"
+        },
+        "workflow_template_name": "Lightwell | Gather Context",
+        "organization_name": "Default"
+      }
+    },
+    {
+      "id": "create_incident_auto",
+      "name": "Create Incident - ServiceNow",
+      "type": "aap_job_template",
+      "position": {
+        "x": 1320,
+        "y": 80
+      },
+      "parameters": {
+        "diff_mode": false,
+        "extra_vars": {
+          "artifact_name": "${sbom_vex_correlation.artifacts.artifact_name}",
+          "affected_system": "${sbom_vex_correlation.artifacts.artifact_name}",
+          "snow_password": "YOUR_SNOW_PASSWORD",
+          "snow_username": "YOUR_SNOW_USERNAME",
+          "incident_category": "software",
+          "snow_instance_url": "YOUR_SNOW_INSTANCE_URL",
+          "notification_body": "Auto patch approved after SBOM/VEX correlation for ${sbom_vex_correlation.artifacts.sbom_package}. Governance route: auto_patch_approved.",
+          "notification_title": "Lightwell auto patch approved"
+        },
+        "job_template_name": "Lightwell | Create ServiceNow Incident",
+        "organization_name": "Default"
+      }
+    },
+    {
+      "id": "lightwell_agent_handover",
+      "name": "Lightwell Agent handover for CI/CD",
+      "type": "agentic",
+      "position": {
+        "x": 1660,
+        "y": 80
+      },
+      "parameters": {
+        "prompt": "You are a Lightwell CI/CD handover agent. A patch publication has been approved for automated deployment.\n\nContext:\n- Artifact: ${sbom_vex_correlation.artifacts.sbom_package}\n- Governance route: ${sbom_vex_correlation.artifacts.governance_route}\n- VEX status: ${sbom_vex_correlation.artifacts.vex_status}\n- ServiceNow incident: ${create_incident_auto.artifacts.incident_number}\n- CMDB/CVE/VEX context workflow completed upstream\n\nStep 1 — Summarize the approved patch and affected components in one paragraph.\n\nStep 2 — Produce a CI/CD handover checklist with these sections:\n  - Pre-deploy checks (SBOM attached, VEX reviewed, change window)\n  - Deployment steps (pipeline trigger, canary, rollout)\n  - Post-deploy validation (health checks, compliance scan)\n  - Rollback criteria\n\nStep 3 — Output ONLY valid JSON:\n{\n  \"handover_summary\": \"\",\n  \"pipeline_recommendation\": \"\",\n  \"pre_deploy_checks\": [],\n  \"post_deploy_validation\": [],\n  \"rollback_criteria\": \"\",\n  \"incident_number\": \"${create_incident_auto.artifacts.incident_number}\"\n}",
+        "response_schema": {
+          "type": "object",
+          "properties": {
+            "handover_summary": {
+              "type": "string"
+            },
+            "incident_number": {
+              "type": "string"
+            },
+            "rollback_criteria": {
+              "type": "string"
+            },
+            "pre_deploy_checks": {
+              "type": "array"
+            },
+            "pipeline_recommendation": {
+              "type": "string"
+            },
+            "post_deploy_validation": {
+              "type": "array"
+            }
+          }
+        },
+        "tool_selection_strategy": "SELECTED"
+      }
+    },
+    {
+      "id": "create_incident_manual",
+      "name": "Create Incident ServiceNow",
+      "type": "aap_job_template",
+      "position": {
+        "x": 980,
+        "y": 300
+      },
+      "parameters": {
+        "diff_mode": false,
+        "extra_vars": {
+          "artifact_name": "${sbom_vex_correlation.artifacts.artifact_name}",
+          "affected_system": "${sbom_vex_correlation.artifacts.artifact_name}",
+          "snow_password": "YOUR_SNOW_PASSWORD",
+          "snow_username": "YOUR_SNOW_USERNAME",
+          "incident_category": "software",
+          "incident_urgency": "2",
+          "snow_instance_url": "YOUR_SNOW_INSTANCE_URL",
+          "notification_body": "Manual patching required for ${sbom_vex_correlation.artifacts.sbom_package}. Policy enforced — operator action needed before deployment.",
+          "notification_title": "Lightwell manual patching required"
+        },
+        "job_template_name": "Lightwell | Create ServiceNow Incident",
+        "organization_name": "Default"
+      }
+    },
+    {
+      "id": "gather_patching_evidence",
+      "name": "Gather Patching evidence",
+      "type": "aap_job_template",
+      "position": {
+        "x": 980,
+        "y": 520
+      },
+      "parameters": {
+        "diff_mode": false,
+        "extra_vars": {
+          "pipeline_url": "${trigger.pipeline_url}",
+          "artifact_name": "${sbom_vex_correlation.artifacts.artifact_name}",
+          "artifact_version": "${sbom_vex_correlation.artifacts.artifact_version}"
+        },
+        "job_template_name": "Lightwell | Gather Patching Evidence",
+        "organization_name": "Default"
+      }
+    },
+    {
+      "id": "check_compliance_posture",
+      "name": "Check Compliance Posture",
+      "type": "aap_job_template",
+      "position": {
+        "x": 1320,
+        "y": 520
+      },
+      "parameters": {
+        "diff_mode": false,
+        "extra_vars": {
+          "sbom_attached": "${gather_patching_evidence.artifacts.sbom_attached}",
+          "vex_attached": "${gather_patching_evidence.artifacts.vex_attached}",
+          "policy_bundle": "lightwell-fast-path"
+        },
+        "job_template_name": "Lightwell | Check Compliance Posture",
+        "organization_name": "Default"
+      }
+    },
+    {
+      "id": "update_close_incident",
+      "name": "Update/Close Incident ServiceNow",
+      "type": "aap_job_template",
+      "position": {
+        "x": 1660,
+        "y": 520
+      },
+      "parameters": {
+        "diff_mode": false,
+        "extra_vars": {
+          "ticket_id": "${trigger.incident_number}",
+          "snow_password": "YOUR_SNOW_PASSWORD",
+          "snow_username": "YOUR_SNOW_USERNAME",
+          "snow_instance_url": "YOUR_SNOW_INSTANCE_URL",
+          "snow_ticket_state": "6",
+          "notification_body": "Application patched and deployed. Evidence collected (deployment ${gather_patching_evidence.artifacts.deployment_id}). Compliance posture: ${check_compliance_posture.artifacts.compliance_posture}.",
+          "notification_title": "Lightwell patch verified and incident closed"
+        },
+        "job_template_name": "Lightwell | Update ServiceNow Ticket",
+        "organization_name": "Default"
+      }
+    },
+    {
+      "id": "fallback_create_incident",
+      "name": "Create Incident ServiceNow (Fallback)",
+      "type": "aap_job_template",
+      "position": {
+        "x": 980,
+        "y": 740
+      },
+      "parameters": {
+        "diff_mode": false,
+        "extra_vars": {
+          "artifact_name": "${sbom_vex_correlation.artifacts.artifact_name}",
+          "affected_system": "${sbom_vex_correlation.artifacts.artifact_name}",
+          "snow_password": "YOUR_SNOW_PASSWORD",
+          "snow_username": "YOUR_SNOW_USERNAME",
+          "incident_category": "software",
+          "incident_urgency": "3",
+          "snow_instance_url": "YOUR_SNOW_INSTANCE_URL",
+          "notification_body": "Fallback route — SBOM/VEX correlation could not determine an approved governance path for ${sbom_vex_correlation.artifacts.sbom_package}. Manual review required.",
+          "notification_title": "Lightwell governance fallback"
+        },
+        "job_template_name": "Lightwell | Create ServiceNow Incident",
+        "organization_name": "Default"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "trigger_manual",
+      "to": "sbom_vex_correlation"
+    },
+    {
+      "from": "trigger_eda_jfrog",
+      "to": "sbom_vex_correlation"
+    },
+    {
+      "from": "trigger_eda_cicd",
+      "to": "sbom_vex_correlation"
+    },
+    {
+      "from": "trigger_eda_gitlab",
+      "to": "sbom_vex_correlation"
+    },
+    {
+      "from": "sbom_vex_correlation",
+      "to": "governance_switch"
+    },
+    {
+      "from": "governance_switch",
+      "from_port": "case_0",
+      "to": "gather_context_workflow"
+    },
+    {
+      "from": "gather_context_workflow",
+      "to": "create_incident_auto"
+    },
+    {
+      "from": "create_incident_auto",
+      "to": "lightwell_agent_handover"
+    },
+    {
+      "from": "governance_switch",
+      "from_port": "case_1",
+      "to": "create_incident_manual"
+    },
+    {
+      "from": "governance_switch",
+      "from_port": "case_2",
+      "to": "gather_patching_evidence"
+    },
+    {
+      "from": "gather_patching_evidence",
+      "to": "check_compliance_posture"
+    },
+    {
+      "from": "check_compliance_posture",
+      "to": "update_close_incident"
+    },
+    {
+      "from": "governance_switch",
+      "from_port": "default",
+      "to": "fallback_create_incident"
+    }
+  ]
+}

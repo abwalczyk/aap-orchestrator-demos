@@ -1,0 +1,44 @@
+---
+- name: Lightwell | Gather Patching Evidence
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Build evidence record
+      ansible.builtin.set_fact:
+        patch_evidence:
+          artifact_name: "{{ artifact_name | default('unknown') }}"
+          artifact_version: "{{ artifact_version | default('unknown') }}"
+          deployment_id: "{{ deployment_id | default('demo-deploy-' ~ lookup('pipe', 'date +%s')) }}"
+          pipeline_url: "{{ pipeline_url | default('https://gitlab.example.com/pipelines/demo') }}"
+          sbom_attached: "{{ sbom_attached | default(true) | bool }}"
+          vex_attached: "{{ vex_attached | default(true) | bool }}"
+          patch_applied_at: "{{ lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ') }}"
+
+    - name: Report evidence summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================================
+          PATCHING EVIDENCE GATHERED
+          ============================================================
+          Artifact:      {{ patch_evidence.artifact_name }}:{{ patch_evidence.artifact_version }}
+          Deployment ID: {{ patch_evidence.deployment_id }}
+          Pipeline:      {{ patch_evidence.pipeline_url }}
+          SBOM attached: {{ patch_evidence.sbom_attached }}
+          VEX attached:  {{ patch_evidence.vex_attached }}
+          Applied at:    {{ patch_evidence.patch_applied_at }}
+          ============================================================
+
+    - name: Publish evidence artifacts
+      ansible.builtin.set_stats:
+        data:
+          artifact_name: "{{ patch_evidence.artifact_name }}"
+          artifact_version: "{{ patch_evidence.artifact_version }}"
+          deployment_id: "{{ patch_evidence.deployment_id }}"
+          pipeline_url: "{{ patch_evidence.pipeline_url }}"
+          sbom_attached: "{{ patch_evidence.sbom_attached | string }}"
+          vex_attached: "{{ patch_evidence.vex_attached | string }}"
+          patch_applied_at: "{{ patch_evidence.patch_applied_at }}"
+          evidence_status: "collected"
+          status: "completed"
