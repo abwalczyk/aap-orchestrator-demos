@@ -23,6 +23,7 @@ exclude:
   - multi-service-correlation/
   - disk-utilization/
   - ticket-enrichment/
+  - lightwell-fast-path/
   - cve-remediation/
   - service-health/
   - patch-management/
