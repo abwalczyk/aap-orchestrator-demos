@@ -128,5 +128,29 @@ ticket-enrichment:
       description: Identifies and kills high-CPU processes above a configurable threshold, cleans up PID markers, and publishes before/after CPU stats as artifacts.
       runs_on: RHEL target host
 
+lightwell-fast-path:
+  status: active
+  items:
+    - name: sbom_vex_correlation.yml
+      path: lightwell-fast-path/playbooks/sbom_vex_correlation.yml
+      description: Correlates SBOM and VEX data for a published artifact, evaluates policy, and publishes a governance_route artifact for downstream switch routing.
+      runs_on: localhost
+    - name: create_snow_incident.yml
+      path: lightwell-fast-path/playbooks/create_snow_incident.yml
+      description: Creates a ServiceNow incident from patch publication context for auto-patch, manual patching, and fallback paths.
+      runs_on: localhost (ServiceNow API)
+    - name: gather_patching_evidence.yml
+      path: lightwell-fast-path/playbooks/gather_patching_evidence.yml
+      description: Collects deployment ID, pipeline URL, and SBOM/VEX attachment status after an application patch is deployed.
+      runs_on: localhost
+    - name: check_compliance_posture.yml
+      path: lightwell-fast-path/playbooks/check_compliance_posture.yml
+      description: Evaluates compliance posture from upstream evidence artifacts and publishes compliance_posture for incident closure.
+      runs_on: localhost
+    - name: update_snow_ticket.yml
+      path: lightwell-fast-path/playbooks/update_snow_ticket.yml
+      description: Looks up a ServiceNow incident by number, posts work notes, and updates or closes the ticket with evidence and compliance summaries.
+      runs_on: localhost (ServiceNow API)
+
 multi-service-correlation:
   status: under-development

@@ -245,6 +245,34 @@ ticket-enrichment:
     - Compare to the linear Ticket Enrichment Arcade — same ITSM, now with switch routing and approval
     - Walk through the Interact Arcade end to end
 
+lightwell-fast-path:
+  description: Patch publications from Lightwell, JFrog, CI/CD, or GitLab enter automation orchestrator through manual and EDA triggers. An SBOM/VEX correlation job evaluates the publication against policy and publishes a governance route artifact. A switch node routes into auto-approved patching with CMDB/CVE/VEX context gathering and a Lightwell CI/CD handover agent, manual patching with ServiceNow incident creation, post-deploy evidence and compliance verification, or a fallback path.
+  ao_building_blocks:
+    - manual_trigger
+    - eda_trigger
+    - aap_job_template
+    - aap_workflow_template
+    - switch
+    - agentic
+  why_it_matters:
+    - SBOM/VEX correlation before deployment closes the gap between artifact publication and policy enforcement — not just "patch available" but "patch approved under governance."
+    - Four-way switch routing matches real patch operations — auto-approved fast path, manual enforcement, post-deploy verification, and fallback when governance is inconclusive.
+    - EDA triggers from JFrog, CI/CD, and GitLab meet operators where patches actually enter the pipeline — not only through manual Lightwell publication.
+    - The Lightwell agent produces a structured CI/CD handover checklist so pipeline operators know exactly what to validate before and after deploy.
+  routes:
+    headers: [Route, Condition, Action]
+    rows:
+      - [auto_patch_approved, "Clean SBOM/VEX, policy approved", "Gather Context workflow → Create incident → Lightwell CI/CD handover agent"]
+      - [manual_patching_required, "Policy review required or blocking CVEs", "Create ServiceNow incident for operator-driven patching"]
+      - [application_patched, "GitLab/CI/CD deployment completed", "Gather evidence → Check compliance → Close incident"]
+      - [fallback, "Governance route undetermined", "Create ServiceNow incident for manual review"]
+  demo_ideas:
+    - Publish a clean artifact with no CVEs and walk the auto-patch approved path through CI/CD handover
+    - Trigger with blocking CVEs to show manual patching incident creation
+    - Fire a GitLab deployment event with incident_number set to close the loop on evidence and compliance
+    - Compare governance routing here to CVE Remediation — publication ingress vs vulnerability alert ingress
+    - Walk through the Interact Arcade end to end
+
 multi-service-correlation:
   description: Multiple correlated alerts arrive across services. The workflow correlates them, identifies root cause when possible, and routes to targeted remediation or AI-assisted triage when not.
   why_it_matters:
